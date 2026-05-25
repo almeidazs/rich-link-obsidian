@@ -76,10 +76,12 @@ git push origin v0.1.0
    - `manifest.json`
    - `styles.css`
 
-## Publish to Obsidian Community Plugins
+## Submit to Obsidian Community Plugins
 
 After the repository has at least one public GitHub release with the files above:
 
-1. Open a pull request against `obsidianmd/obsidian-releases`.
-2. Add your repository to `community-plugins.json`.
-3. Wait for the Obsidian review process to approve it.
+1. Go to `https://community.obsidian.md` and sign in with your Obsidian account.
+2. Link your GitHub account to your profile.
+3. Open `Plugins` in the sidebar and choose `New plugin`.
+4. Submit the repository URL: `https://github.com/almeidazs/rich-link-obsidian`.
+5. Follow the review feedback shown by the directory until the submission passes.
