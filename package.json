@@ -1,0 +1,30 @@
+{
+	"name": "rich-link-obsidian",
+	"version": "0.1.0",
+	"description": "Obsidian plugin that converts pasted or selected URLs into markdown rich links with favicon and title.",
+	"type": "module",
+	"private": true,
+	"author": "Almeida",
+	"license": "MIT",
+	"homepage": "https://github.com/almeidazs/rich-link-obsidian",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/almeidazs/rich-link-obsidian.git"
+	},
+	"bugs": {
+		"url": "https://github.com/almeidazs/rich-link-obsidian/issues"
+	},
+	"scripts": {
+		"build": "node esbuild.config.mjs",
+		"check:release-version": "node scripts/check-release-version.mjs",
+		"clean": "rm -f main.js",
+		"dev": "node esbuild.config.mjs --watch",
+		"install:local": "node scripts/install-local.mjs",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"esbuild": "^0.28.0",
+		"obsidian": "^1.12.3",
+		"typescript": "^6.0.3"
+	}
+}
