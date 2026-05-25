@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "*.*.*"
 
 permissions:
   contents: write
@@ -29,7 +29,7 @@ jobs:
         run: npm run typecheck
 
       - name: Validate release metadata
-        run: npm run check:release-version -- "${GITHUB_REF_NAME#v}"
+        run: npm run check:release-version -- "${GITHUB_REF_NAME}"
 
       - name: Build
         run: npm run build

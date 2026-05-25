@@ -64,11 +64,11 @@ This repository is set up for GitHub-based releases.
 
 1. Update `manifest.json`, `versions.json`, and `package.json` to the new version.
 2. Commit and push the changes.
-3. Create and push a tag in the format `vX.Y.Z`.
+3. Create and push a tag in the format `X.Y.Z`.
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag 0.1.0
+git push origin 0.1.0
 ```
 
 4. The GitHub Actions release workflow will build the plugin and attach:
