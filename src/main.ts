@@ -5,6 +5,13 @@ import {
 	type Menu,
 	Plugin,
 } from "obsidian";
+import {
+	loadPluginSettings,
+	type RichLinkResolverSettings,
+	RichLinkResolverSettingTab,
+	savePluginSettings,
+} from "./settings";
+import { buildIgnoreRules, shouldIgnoreUrl } from "./shared/ignore-rules";
 import { buildLoadingMarkdownLink } from "./shared/loading-placeholder";
 import { buildRichMarkdownLink } from "./shared/markdown-link";
 import {
@@ -19,7 +26,12 @@ import {
 import { resolveUrlMetadata } from "./shared/url-resolution";
 
 export default class RichLinkResolverPlugin extends Plugin {
+	settings!: RichLinkResolverSettings;
+
 	override async onload(): Promise<void> {
+		this.settings = await loadPluginSettings(this);
+		this.addSettingTab(new RichLinkResolverSettingTab(this.app, this));
+
 		this.addCommand({
 			id: "resolve-selected-url-to-rich-link",
 			name: "Resolve selected URL to rich link",
@@ -56,6 +68,10 @@ export default class RichLinkResolverPlugin extends Plugin {
 		);
 
 		if (!pastedUrl) {
+			return;
+		}
+
+		if (shouldIgnoreUrl(pastedUrl, buildIgnoreRules(this.settings))) {
 			return;
 		}
 
@@ -138,14 +154,20 @@ export default class RichLinkResolverPlugin extends Plugin {
 		const loadingMarkdown = buildLoadingMarkdownLink(target.url);
 		editor.replaceRange(loadingMarkdown, target.from, target.to, "rich-link");
 
-		const initialRange =
-			this.findPlaceholderRange(editor, loadingMarkdown, target.from) ?? {
-				from: target.from,
-				to: target.to,
-			};
+		const initialRange = this.findPlaceholderRange(
+			editor,
+			loadingMarkdown,
+			target.from,
+		) ?? {
+			from: target.from,
+			to: target.to,
+		};
 
 		const metadata = await resolveUrlMetadata(target.url);
-		const richMarkdown = buildRichMarkdownLink(metadata);
+		const richMarkdown = buildRichMarkdownLink(
+			metadata,
+			this.settings.iconPosition,
+		);
 
 		const currentRange =
 			this.findPlaceholderRange(editor, loadingMarkdown, initialRange.from) ??
@@ -155,7 +177,12 @@ export default class RichLinkResolverPlugin extends Plugin {
 			return;
 		}
 
-		editor.replaceRange(richMarkdown, currentRange.from, currentRange.to, "rich-link");
+		editor.replaceRange(
+			richMarkdown,
+			currentRange.from,
+			currentRange.to,
+			"rich-link",
+		);
 	}
 
 	private findPlaceholderRange(
@@ -180,5 +207,9 @@ export default class RichLinkResolverPlugin extends Plugin {
 			from: editor.offsetToPos(matchIndex),
 			to: editor.offsetToPos(matchIndex + placeholderLength),
 		};
+	}
+
+	async persistSettings(): Promise<void> {
+		this.settings = await savePluginSettings(this, this.settings);
 	}
 }
