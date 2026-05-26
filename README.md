@@ -5,7 +5,7 @@
 Example output:
 
 ```md
-[![](<https://example.com/favicon.ico>) Example Domain](<https://example.com>)
+[![favicon|16x16](<https://example.com/favicon.ico>) Example Domain](<https://example.com>)
 ```
 
 ## Features
@@ -13,7 +13,7 @@ Example output:
 - Automatically resolves a pasted URL when the clipboard contains a single URL.
 - Resolves the selected URL or the URL under the cursor through a command or context menu action.
 - Shows an inline `Loading URL...` placeholder while metadata is being fetched.
-- Uses the page favicon URL directly in the generated markdown.
+- Uses the page favicon URL directly in the generated markdown, rendered at `16x16`.
 - Falls back to a plain markdown link if a favicon URL cannot be resolved.
 
 ## Local testing
