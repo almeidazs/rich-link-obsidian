@@ -1,6 +1,6 @@
 {
 	"name": "rich-link-obsidian",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Obsidian plugin that converts pasted or selected URLs into markdown rich links with favicon and title.",
 	"type": "module",
 	"private": true,

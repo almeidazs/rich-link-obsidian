@@ -1,7 +1,7 @@
 {
 	"id": "rich-link-resolver",
 	"name": "Rich Link Resolver",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"minAppVersion": "1.5.1",
 	"description": "Converts pasted or selected URLs into markdown rich links with favicon and title.",
 	"author": "Almeida",
