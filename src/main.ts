@@ -5,7 +5,6 @@ import {
 	type Menu,
 	Plugin,
 } from "obsidian";
-import { cacheResizedFavicon } from "./shared/favicon-cache";
 import { buildLoadingMarkdownLink } from "./shared/loading-placeholder";
 import { buildRichMarkdownLink } from "./shared/markdown-link";
 import {
@@ -146,11 +145,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 			};
 
 		const metadata = await resolveUrlMetadata(target.url);
-		const cachedIconUrl = await cacheResizedFavicon(this.app, metadata.iconUrl);
-		const richMarkdown = buildRichMarkdownLink({
-			...metadata,
-			iconUrl: cachedIconUrl,
-		});
+		const richMarkdown = buildRichMarkdownLink(metadata);
 
 		const currentRange =
 			this.findPlaceholderRange(editor, loadingMarkdown, initialRange.from) ??

@@ -5,7 +5,7 @@
 Example output:
 
 ```md
-[![](<app://local-favicon.png>) Example Domain](<https://example.com>)
+[![](<https://example.com/favicon.ico>) Example Domain](<https://example.com>)
 ```
 
 ## Features
@@ -13,8 +13,8 @@ Example output:
 - Automatically resolves a pasted URL when the clipboard contains a single URL.
 - Resolves the selected URL or the URL under the cursor through a command or context menu action.
 - Shows an inline `Loading URL...` placeholder while metadata is being fetched.
-- Resizes favicons to a stable `16x16` local cache so note layout does not break.
-- Falls back to a plain markdown link if a favicon cannot be downloaded or resized.
+- Uses the page favicon URL directly in the generated markdown.
+- Falls back to a plain markdown link if a favicon URL cannot be resolved.
 
 ## Local testing
 
