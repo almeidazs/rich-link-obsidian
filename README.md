@@ -16,6 +16,7 @@ Example output:
 - Uses the page favicon URL directly in the generated markdown, rendered at `16x16`.
 - Falls back to a plain markdown link if a favicon URL cannot be resolved.
 - Lets you choose whether the favicon appears before or after the title.
+- Can render resolved URLs as preview cards instead of favicon + title links.
 - Lets you ignore specific domains and exact URLs for automatic paste conversion.
 
 ## Local testing

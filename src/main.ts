@@ -167,6 +167,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 		const richMarkdown = buildRichMarkdownLink(
 			metadata,
 			this.settings.iconPosition,
+			this.settings.renderAsCard,
 		);
 
 		const currentRange =

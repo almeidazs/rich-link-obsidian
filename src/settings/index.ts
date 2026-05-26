@@ -6,12 +6,14 @@ export type IconPosition = (typeof ICON_POSITIONS)[number];
 
 export interface RichLinkResolverSettings {
 	iconPosition: IconPosition;
+	renderAsCard: boolean;
 	ignoredDomainsRaw: string;
 	ignoredUrlsRaw: string;
 }
 
 export const DEFAULT_SETTINGS: RichLinkResolverSettings = {
 	iconPosition: "before-title",
+	renderAsCard: false,
 	ignoredDomainsRaw: "",
 	ignoredUrlsRaw: "",
 };
@@ -67,6 +69,20 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Render links as cards")
+			.setDesc(
+				"When enabled, resolved URLs are inserted as preview cards instead of favicon + title links.",
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.renderAsCard)
+					.onChange(async (value) => {
+						this.plugin.settings.renderAsCard = value;
+						await this.plugin.persistSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Ignored domains")
 			.setDesc(
 				"One domain per line. Matches the exact domain and its subdomains.",
@@ -112,6 +128,7 @@ function normalizeSettings(value: unknown): RichLinkResolverSettings {
 
 	return {
 		iconPosition: normalizeIconPosition(settingsRecord.iconPosition),
+		renderAsCard: settingsRecord.renderAsCard === true,
 		ignoredDomainsRaw: normalizeMultilineText(settingsRecord.ignoredDomainsRaw),
 		ignoredUrlsRaw: normalizeMultilineText(settingsRecord.ignoredUrlsRaw),
 	};

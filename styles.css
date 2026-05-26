@@ -1,1 +1,124 @@
-/* This plugin does not require custom styles. */
+.rich-link-card {
+	display: flex;
+	width: min(100%, 640px);
+	min-height: 112px;
+	overflow: hidden;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-primary);
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+}
+
+.rich-link-card,
+.rich-link-card:hover {
+	text-decoration: none;
+}
+
+.rich-link-card__visual {
+	position: relative;
+	display: flex;
+	flex: 0 0 32%;
+	min-width: 180px;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 22px;
+	color: #f8f4ff;
+	background:
+		radial-gradient(circle at 80% 80%, rgb(124 58 237 / 42%), transparent 34%),
+		linear-gradient(135deg, #0c0a12 0%, #17121f 62%, #261243 100%);
+	text-decoration: none;
+}
+
+.rich-link-card__visual-icon {
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	object-fit: contain;
+	box-shadow: 0 10px 28px rgb(0 0 0 / 28%);
+}
+
+.rich-link-card__visual-fallback {
+	display: grid;
+	width: 42px;
+	height: 42px;
+	place-items: center;
+	border-radius: 12px;
+	background: rgb(255 255 255 / 14%);
+	font-weight: 700;
+	font-size: 22px;
+}
+
+.rich-link-card__visual-title {
+	display: -webkit-box;
+	overflow: hidden;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 1.15;
+	text-overflow: ellipsis;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.rich-link-card__content {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	flex-direction: column;
+	justify-content: center;
+	gap: 8px;
+	padding: 14px 16px;
+	color: var(--text-normal);
+	background: var(--background-secondary);
+	text-decoration: none;
+}
+
+.rich-link-card__title {
+	display: -webkit-box;
+	overflow: hidden;
+	color: var(--link-color);
+	font-size: 16px;
+	line-height: 1.25;
+	text-overflow: ellipsis;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+}
+
+.rich-link-card__description {
+	display: -webkit-box;
+	overflow: hidden;
+	margin: 0;
+	color: var(--text-muted);
+	font-size: 13px;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.rich-link-card__source {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-accent);
+	font-size: 13px;
+	line-height: 1.2;
+}
+
+.rich-link-card__favicon {
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	object-fit: contain;
+}
+
+@media (max-width: 560px) {
+	.rich-link-card {
+		flex-direction: column;
+	}
+
+	.rich-link-card__visual {
+		min-width: 0;
+		min-height: 96px;
+	}
+}

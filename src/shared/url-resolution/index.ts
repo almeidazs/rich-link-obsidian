@@ -12,6 +12,12 @@ const TITLE_SELECTORS = [
 	"title",
 ] as const;
 
+const DESCRIPTION_SELECTORS = [
+	'meta[property="og:description"]',
+	'meta[name="twitter:description"]',
+	'meta[name="description"]',
+] as const;
+
 const ICON_SELECTORS = [
 	'link[rel~="icon"]',
 	'link[rel="shortcut icon"]',
@@ -22,6 +28,7 @@ const ICON_SELECTORS = [
 export interface ResolvedUrlMetadata {
 	url: string;
 	title: string;
+	description: string | null;
 	iconUrl: string | null;
 }
 
@@ -39,11 +46,13 @@ export async function resolveUrlMetadata(
 
 		const baseUrl = extractBaseUrl(response.text, url) ?? url;
 		const title = extractTitle(response.text) ?? fallback.title;
+		const description = extractDescription(response.text);
 		const iconUrl = extractIconUrl(response.text, baseUrl) ?? fallback.iconUrl;
 
 		return {
 			url,
 			title,
+			description,
 			iconUrl,
 		};
 	} catch {
@@ -58,6 +67,7 @@ function buildFallbackMetadata(url: string): ResolvedUrlMetadata {
 	return {
 		url,
 		title,
+		description: null,
 		iconUrl: buildGoogleFaviconUrl(url),
 	};
 }
@@ -76,6 +86,23 @@ function extractTitle(html: string): string | null {
 		extractMetaContent(html, "property", "og:title") ??
 		extractMetaContent(html, "name", "twitter:title") ??
 		extractTagText(html, "title")
+	);
+}
+
+function extractDescription(html: string): string | null {
+	const parsedDocument = parseHtml(html);
+	const documentDescription = parsedDocument
+		? extractDescriptionFromDocument(parsedDocument)
+		: null;
+
+	if (documentDescription) {
+		return documentDescription;
+	}
+
+	return (
+		extractMetaContent(html, "property", "og:description") ??
+		extractMetaContent(html, "name", "twitter:description") ??
+		extractMetaContent(html, "name", "description")
 	);
 }
 
@@ -132,6 +159,20 @@ function extractTitleFromDocument(document: Document): string | null {
 				? element?.textContent
 				: element?.getAttribute("content");
 		const sanitizedValue = sanitizeText(rawValue);
+
+		if (sanitizedValue) {
+			return sanitizedValue;
+		}
+	}
+
+	return null;
+}
+
+function extractDescriptionFromDocument(document: Document): string | null {
+	for (const selector of DESCRIPTION_SELECTORS) {
+		const sanitizedValue = sanitizeText(
+			document.querySelector(selector)?.getAttribute("content"),
+		);
 
 		if (sanitizedValue) {
 			return sanitizedValue;
