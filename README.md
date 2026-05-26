@@ -15,6 +15,8 @@ Example output:
 - Shows an inline `Loading URL...` placeholder while metadata is being fetched.
 - Uses the page favicon URL directly in the generated markdown, rendered at `16x16`.
 - Falls back to a plain markdown link if a favicon URL cannot be resolved.
+- Lets you choose whether the favicon appears before or after the title.
+- Lets you ignore specific domains and exact URLs for automatic paste conversion.
 
 ## Local testing
 
