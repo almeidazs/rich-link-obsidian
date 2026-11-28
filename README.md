@@ -1,101 +1,115 @@
-# Rich Link Resolver
+<div align="center">
 
-`Rich Link Resolver` is an Obsidian plugin that turns a pasted or selected URL into a markdown rich link using the page title and favicon.
+<h1>Rich Link Resolver</h1>
 
-Example output:
+<h3>Paste a URL. Get a clean link with the page title and favicon.</h3>
 
-```md
-[![favicon|16x16](<https://example.com/favicon.ico>) Example Domain](<https://example.com>)
-```
+<p>
+  Rich Link Resolver turns bare URLs in your Obsidian notes into readable links,<br>
+  or full preview cards, without leaving the editor.
+</p>
+
+<p>
+  <a href="#features">Features</a> &nbsp;·&nbsp;
+  <a href="#install">Install</a> &nbsp;·&nbsp;
+  <a href="#settings">Settings</a> &nbsp;·&nbsp;
+  <a href="#privacy">Privacy</a> &nbsp;·&nbsp;
+  <a href="#support">Support</a>
+</p>
+
+<br>
+
+<img alt="Links in a note rendered with a favicon and the page title" src="assets/example.png" width="760">
+
+<p><sub>Pasted URLs become a favicon and a title, right inside the paragraph.</sub></p>
+
+<br>
+
+</div>
+
+<div align="center">
+
+## How it works
+
+|  1. Paste  |  2. Resolve  |  3. Keep writing  |
+| :---: | :---: | :---: |
+| Paste a URL anywhere in your note. | A short `Loading URL...` placeholder appears while the page is fetched. | It is replaced by the page title and favicon, as a normal markdown link. |
+
+</div>
+
+<br>
+
+<div align="center">
 
 ## Features
 
-- Automatically resolves a pasted URL when the clipboard contains a single URL.
-- Resolves the selected URL or the URL under the cursor through a command or context menu action.
-- Shows an inline `Loading URL...` placeholder while metadata is being fetched.
-- Uses the page favicon URL directly in the generated markdown, rendered at `16x16`.
-- Falls back to a plain markdown link if a favicon URL cannot be resolved.
-- Lets you choose whether the favicon appears before or after the title.
-- Lets you turn the favicon off, or adjust its size, spacing and vertical offset to match your theme (these also restyle links you already have).
-- Can render resolved URLs as preview cards instead of favicon + title links (only when the URL is alone on its line; otherwise a normal link is used).
-- Falls back to the hostname if the page is slow (10s timeout), unreachable or returns an error.
-- Lets you ignore specific domains and exact URLs for automatic paste conversion.
-- Leaves the URL untouched when converting it would break the surrounding markdown:
-  - pasting where a link URL goes, e.g. right after `[Hello](`
-  - pasting over selected text, so Obsidian's built-in `[selected text](url)` behavior still works
-  - pasting inside a fenced code block (` ``` ` / `~~~`) or inline code
-  - pasting inside link text, a `[[wikilink`, or the note properties (frontmatter)
+| | |
+| :---: | :---: |
+| **Paste and done**<br>A single pasted URL is resolved automatically. You can also resolve the selected URL, or the one under your cursor, from the command palette or the context menu. | **Preview cards**<br>Prefer something bigger? Render a card with the title, description, favicon and domain. Cards are used when the URL sits on its own line, so they never break a sentence. |
+| **Make it fit your theme**<br>Put the favicon before or after the title, turn it off, or tune its size, spacing and vertical offset. Changes also apply to the links you already have. | **Ignore list**<br>Skip automatic conversion for domains (subdomains included) and for exact URLs. Pasted URLs and `*.example.com` work as rules. |
+| **Safe by default**<br>Your note is left alone when a link would not belong there: inside code, link text, `[[wikilinks]]`, frontmatter, or when you paste over selected text to wrap it in a link. | **Never gets stuck**<br>If a site is slow, unreachable or answers with an error, you get a link with the domain name after 10 seconds instead of a stuck placeholder. |
 
-## Local testing
+</div>
 
-1. Install dependencies:
+<br>
 
-```bash
-npm install
-```
+<div align="center">
 
-2. Build the plugin:
+## Install
 
-```bash
-npm run build
-```
+Open **Settings → Community plugins → Browse**, search for **Rich Link Resolver**,
+then install and enable it. Or [open it on the Obsidian site](https://obsidian.md/plugins?id=rich-link-resolver).
 
-3. Copy it into your vault:
+Prefer a manual install? Download `main.js`, `manifest.json` and `styles.css` from the
+[latest release](https://github.com/almeidazs/rich-link-obsidian/releases/latest)
+into `<your vault>/.obsidian/plugins/rich-link-resolver/`.
 
-```bash
-VAULT="/absolute/path/to/Your Vault"
-mkdir -p "$VAULT/.obsidian/plugins/rich-link-resolver"
-cp main.js manifest.json styles.css "$VAULT/.obsidian/plugins/rich-link-resolver/"
-```
+Works on desktop and mobile, Obsidian 1.5.1 or newer.
 
-4. In Obsidian, open `Settings -> Community plugins`, reload plugins, and enable `Rich Link Resolver`.
+</div>
 
-## Development
+<br>
 
-Run the unit tests (uses Node's built-in test runner, Node 22.18+ / 23.6+):
+<div align="center">
 
-```bash
-npm test
-```
+## Settings
 
-Watch mode:
+| Setting | What it does |
+| :---: | :---: |
+| **Icon position** | Favicon before or after the title |
+| **Render links as cards** | Insert preview cards instead of favicon + title links |
+| **Show favicon** | Turn the icon off for plain title links |
+| **Favicon size** | 8 to 48 px |
+| **Favicon spacing** | Extra space between the icon and the title |
+| **Favicon vertical offset** | Nudge the icon up or down to line it up with your theme's text |
+| **Ignored domains** | One per line, subdomains included |
+| **Ignored URLs** | One exact `http` or `https` URL per line |
 
-```bash
-npm run dev
-```
+</div>
 
-After each rebuild, copy the latest plugin files again:
+<br>
 
-```bash
-VAULT="/absolute/path/to/Your Vault"
-mkdir -p "$VAULT/.obsidian/plugins/rich-link-resolver"
-cp main.js manifest.json styles.css "$VAULT/.obsidian/plugins/rich-link-resolver/"
-```
+<div align="center">
 
-## Release process
+## Privacy
 
-This repository is set up for GitHub-based releases.
+The plugin only contacts the URL you paste, from your own device, to read its title,
+description and icon. There is no account, no analytics and no server of ours in between.
+When a site has no usable icon, the link points to Google's favicon service instead.
 
-1. Update `manifest.json`, `versions.json`, and `package.json` to the new version.
-2. Commit and push the changes.
-3. Create and push a tag in the format `X.Y.Z`.
+</div>
 
-```bash
-git tag 0.1.0
-git push origin 0.1.0
-```
+<br>
 
-4. The GitHub Actions release workflow will build the plugin and attach:
-   - `main.js`
-   - `manifest.json`
-   - `styles.css`
+<div align="center">
 
-## Submit to Obsidian Community Plugins
+## Support
 
-After the repository has at least one public GitHub release with the files above:
+Found a bug or have an idea? [Open an issue](https://github.com/almeidazs/rich-link-obsidian/issues).
+If the plugin saves you time, a ⭐ on the repo helps others find it.
 
-1. Go to `https://community.obsidian.md` and sign in with your Obsidian account.
-2. Link your GitHub account to your profile.
-3. Open `Plugins` in the sidebar and choose `New plugin`.
-4. Submit the repository URL: `https://github.com/almeidazs/rich-link-obsidian`.
-5. Follow the review feedback shown by the directory until the submission passes.
+<br>
+
+Released under the [Apache License 2.0](LICENSE) · Made by [@eualmeidazs](https://x.com/eualmeidazs)
+
+</div>
