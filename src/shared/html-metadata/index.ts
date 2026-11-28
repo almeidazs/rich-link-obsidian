@@ -1,4 +1,4 @@
-import type { PageResponse, ResolvedUrlMetadata } from "../../types";
+import type { PageResponse, ResolvedUrlMetadata } from '../../types';
 
 // Turns a fetched page into the metadata used for the rich link. It only needs
 // DOMParser (always present in Obsidian) so it can be tested without Obsidian.
@@ -6,7 +6,7 @@ import type { PageResponse, ResolvedUrlMetadata } from "../../types";
 const TITLE_SELECTORS = [
 	'meta[property="og:title"]',
 	'meta[name="twitter:title"]',
-	"title",
+	'title',
 ] as const;
 
 const DESCRIPTION_SELECTORS = [
@@ -52,7 +52,7 @@ function buildFallbackMetadata(url: string): ResolvedUrlMetadata {
 	try {
 		return {
 			url,
-			title: new URL(url).hostname.replace(/^www\./, ""),
+			title: new URL(url).hostname.replace(/^www\./, ''),
 			description: null,
 			iconUrl: buildGoogleFaviconUrl(url),
 		};
@@ -62,12 +62,12 @@ function buildFallbackMetadata(url: string): ResolvedUrlMetadata {
 }
 
 function parseHtml(html: string): Document | null {
-	if (typeof DOMParser === "undefined") {
+	if (typeof DOMParser === 'undefined') {
 		return null;
 	}
 
 	try {
-		return new DOMParser().parseFromString(html, "text/html");
+		return new DOMParser().parseFromString(html, 'text/html');
 	} catch {
 		return null;
 	}
@@ -80,8 +80,8 @@ function findText(
 	for (const selector of selectors) {
 		for (const element of document.querySelectorAll(selector)) {
 			const value = sanitizeText(
-				element.localName === "meta"
-					? element.getAttribute("content")
+				element.localName === 'meta'
+					? element.getAttribute('content')
 					: element.textContent,
 			);
 
@@ -95,7 +95,7 @@ function findText(
 }
 
 function findBaseUrl(document: Document, pageUrl: string): string | null {
-	const href = document.querySelector("base[href]")?.getAttribute("href");
+	const href = document.querySelector('base[href]')?.getAttribute('href');
 
 	return href ? resolveHttpUrl(href, pageUrl) : null;
 }
@@ -105,7 +105,7 @@ function findBaseUrl(document: Document, pageUrl: string): string | null {
 function findIconUrl(document: Document, baseUrl: string): string | null {
 	for (const selector of ICON_SELECTORS) {
 		for (const element of document.querySelectorAll(selector)) {
-			const href = element.getAttribute("href");
+			const href = element.getAttribute('href');
 			const iconUrl = href ? resolveHttpUrl(href, baseUrl) : null;
 
 			if (iconUrl) {
@@ -114,14 +114,14 @@ function findIconUrl(document: Document, baseUrl: string): string | null {
 		}
 	}
 
-	return resolveHttpUrl("/favicon.ico", baseUrl);
+	return resolveHttpUrl('/favicon.ico', baseUrl);
 }
 
 function resolveHttpUrl(pathOrUrl: string, baseUrl: string): string | null {
 	try {
 		const resolved = new URL(pathOrUrl.trim(), baseUrl);
 
-		return resolved.protocol === "http:" || resolved.protocol === "https:"
+		return resolved.protocol === 'http:' || resolved.protocol === 'https:'
 			? resolved.href
 			: null;
 	} catch {
@@ -140,6 +140,6 @@ function sanitizeText(value: string | null | undefined): string | null {
 		return null;
 	}
 
-	const sanitizedValue = value.replace(/\s+/g, " ").trim();
+	const sanitizedValue = value.replace(/\s+/g, ' ').trim();
 	return sanitizedValue || null;
 }

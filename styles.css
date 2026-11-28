@@ -1,19 +1,19 @@
 /* Favicons inside rich links. The variables are set by the plugin from its
    settings; the fallbacks match the default look. */
 /* Exact alt matches only, so unrelated images are never touched. */
-img[alt="favicon"],
-img[alt="favicon-after"] {
+img[alt='favicon'],
+img[alt='favicon-after'] {
 	position: relative;
 	top: calc(var(--rich-link-favicon-offset, 0px) * -1);
 	width: var(--rich-link-favicon-size, 16px);
 	height: var(--rich-link-favicon-size, 16px);
 }
 
-img[alt="favicon"] {
+img[alt='favicon'] {
 	margin-inline-end: var(--rich-link-favicon-spacing, 0px);
 }
 
-img[alt="favicon-after"] {
+img[alt='favicon-after'] {
 	margin-inline-start: var(--rich-link-favicon-spacing, 0px);
 }
 
@@ -44,7 +44,11 @@ img[alt="favicon-after"] {
 	padding: 22px;
 	color: #f8f4ff;
 	background:
-		radial-gradient(circle at 80% 80%, rgb(124 58 237 / 42%), transparent 34%),
+		radial-gradient(
+			circle at 80% 80%,
+			rgb(124 58 237 / 42%),
+			transparent 34%
+		),
 		linear-gradient(135deg, #0c0a12 0%, #17121f 62%, #261243 100%);
 	text-decoration: none;
 }

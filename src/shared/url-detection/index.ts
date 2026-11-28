@@ -1,12 +1,17 @@
-import type { Editor } from "obsidian";
-import type { EditorUrlMatch } from "../../types";
+import type { Editor } from 'obsidian';
+
+import type { EditorUrlMatch } from '../../types';
 
 // Quotes and brackets are allowed inside a URL (`Rock_'n'_Roll`, `?a[]=1`);
 // the ones that merely surround it are trimmed off afterwards.
 const URL_PATTERN = /https?:\/\/[^\s<>"`]+/gi;
 const HTTP_SCHEME = /^https?:\/\//i;
 const TRAILING_PUNCTUATION = /[.,;:!?'"]+$/;
-const CLOSING_TO_OPENING: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
+const CLOSING_TO_OPENING: Record<string, string> = {
+	')': '(',
+	']': '[',
+	'}': '{',
+};
 
 export function normalizeClipboardUrl(
 	value: string | null | undefined,
@@ -53,7 +58,9 @@ export function isUrlAloneOnLine(
 	fromCh: number,
 	toCh: number,
 ): boolean {
-	return line.slice(0, fromCh).trim() === "" && line.slice(toCh).trim() === "";
+	return (
+		line.slice(0, fromCh).trim() === '' && line.slice(toCh).trim() === ''
+	);
 }
 
 // `<https://a.com>` is an autolink: replacing only the URL inside would leave
@@ -68,7 +75,7 @@ function includeAutolinkBrackets(
 
 	const line = editor.getLine(match.from.line);
 
-	if (line[match.from.ch - 1] !== "<" || line[match.to.ch] !== ">") {
+	if (line[match.from.ch - 1] !== '<' || line[match.to.ch] !== '>') {
 		return match;
 	}
 
@@ -97,7 +104,7 @@ function findSelectedUrl(editor: Editor): EditorUrlMatch | null {
 		return null;
 	}
 
-	const startOffset = editor.posToOffset(editor.getCursor("from")) + urlIndex;
+	const startOffset = editor.posToOffset(editor.getCursor('from')) + urlIndex;
 	const endOffset = startOffset + normalizedUrl.length;
 
 	return {
@@ -108,7 +115,7 @@ function findSelectedUrl(editor: Editor): EditorUrlMatch | null {
 }
 
 function findUrlAtCursor(editor: Editor): EditorUrlMatch | null {
-	const cursor = editor.getCursor("from");
+	const cursor = editor.getCursor('from');
 	const line = editor.getLine(cursor.line);
 
 	for (const match of line.matchAll(URL_PATTERN)) {
@@ -139,7 +146,7 @@ function findPreferredUrlInCursorLine(
 	editor: Editor,
 	preferredUrl: string,
 ): EditorUrlMatch | null {
-	const cursor = editor.getCursor("from");
+	const cursor = editor.getCursor('from');
 	const line = editor.getLine(cursor.line);
 	const start = line.indexOf(preferredUrl);
 
@@ -165,7 +172,7 @@ function matchesPreferredUrl(url: string, preferredUrl?: string): boolean {
 function normalizeUrlCandidate(value: string): string | null {
 	let candidate = value.trim();
 
-	if (candidate.startsWith("<") && candidate.endsWith(">")) {
+	if (candidate.startsWith('<') && candidate.endsWith('>')) {
 		candidate = candidate.slice(1, -1).trim();
 	}
 
@@ -177,7 +184,7 @@ function normalizeUrlCandidate(value: string): string | null {
 
 	try {
 		const parsedUrl = new URL(candidate);
-		if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+		if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
 			return null;
 		}
 
@@ -196,12 +203,15 @@ function trimTrailingDecorations(value: string): string {
 
 	do {
 		previous = trimmed;
-		trimmed = trimmed.replace(TRAILING_PUNCTUATION, "");
+		trimmed = trimmed.replace(TRAILING_PUNCTUATION, '');
 
 		const last = trimmed.slice(-1);
 		const opening = CLOSING_TO_OPENING[last];
 
-		if (opening && countCharacter(trimmed, last) > countCharacter(trimmed, opening)) {
+		if (
+			opening &&
+			countCharacter(trimmed, last) > countCharacter(trimmed, opening)
+		) {
 			trimmed = trimmed.slice(0, -1);
 		}
 	} while (trimmed !== previous);

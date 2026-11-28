@@ -3,7 +3,7 @@ import {
 	type IconPosition,
 	type NumberRange,
 	type RichLinkResolverSettings,
-} from "../types/settings.ts";
+} from '../types/settings.ts';
 
 // Kept free of Obsidian imports so it can be unit-tested with `node --test`.
 
@@ -12,14 +12,14 @@ export const FAVICON_SPACING_RANGE: NumberRange = { min: 0, max: 16, step: 1 };
 export const FAVICON_OFFSET_RANGE: NumberRange = { min: -8, max: 8, step: 1 };
 
 export const DEFAULT_SETTINGS: RichLinkResolverSettings = {
-	iconPosition: "before-title",
+	iconPosition: 'before-title',
 	renderAsCard: false,
 	showFavicon: true,
 	faviconSize: 16,
 	faviconSpacing: 0,
 	faviconOffset: 0,
-	ignoredDomainsRaw: "",
-	ignoredUrlsRaw: "",
+	ignoredDomainsRaw: '',
+	ignoredUrlsRaw: '',
 };
 
 export function normalizeSettings(value: unknown): RichLinkResolverSettings {
@@ -44,7 +44,9 @@ export function normalizeSettings(value: unknown): RichLinkResolverSettings {
 			FAVICON_OFFSET_RANGE,
 			DEFAULT_SETTINGS.faviconOffset,
 		),
-		ignoredDomainsRaw: normalizeMultilineText(settingsRecord.ignoredDomainsRaw),
+		ignoredDomainsRaw: normalizeMultilineText(
+			settingsRecord.ignoredDomainsRaw,
+		),
 		ignoredUrlsRaw: normalizeMultilineText(settingsRecord.ignoredUrlsRaw),
 	};
 }
@@ -58,7 +60,7 @@ function normalizeNumber(
 	range: NumberRange,
 	fallback: number,
 ): number {
-	if (typeof value !== "number" || !Number.isFinite(value)) {
+	if (typeof value !== 'number' || !Number.isFinite(value)) {
 		return fallback;
 	}
 
@@ -66,15 +68,15 @@ function normalizeNumber(
 }
 
 function normalizeMultilineText(value: unknown): string {
-	if (typeof value !== "string") {
-		return "";
+	if (typeof value !== 'string') {
+		return '';
 	}
 
 	return value
 		.split(/\r?\n/)
 		.map((entry) => entry.trim())
 		.filter(Boolean)
-		.join("\n");
+		.join('\n');
 }
 
 export function isIconPosition(value: unknown): value is IconPosition {
@@ -82,5 +84,5 @@ export function isIconPosition(value: unknown): value is IconPosition {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
+	return typeof value === 'object' && value !== null;
 }

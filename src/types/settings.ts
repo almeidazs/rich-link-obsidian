@@ -1,6 +1,6 @@
-import type { Plugin } from "obsidian";
+import type { Plugin } from 'obsidian';
 
-export const ICON_POSITIONS = ["before-title", "after-title"] as const;
+export const ICON_POSITIONS = ['before-title', 'after-title'] as const;
 
 export type IconPosition = (typeof ICON_POSITIONS)[number];
 
@@ -25,9 +25,9 @@ export interface NumberRange {
 }
 
 export type FaviconNumberSetting =
-	| "faviconSize"
-	| "faviconSpacing"
-	| "faviconOffset";
+	| 'faviconSize'
+	| 'faviconSpacing'
+	| 'faviconOffset';
 
 export interface RichLinkResolverSettingsOwner extends Plugin {
 	settings: RichLinkResolverSettings;

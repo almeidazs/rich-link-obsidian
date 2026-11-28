@@ -31,8 +31,8 @@
 
 ## How it works
 
-|  1. Paste  |  2. Resolve  |  3. Keep writing  |
-| :---: | :---: | :---: |
+|              1. Paste              |                               2. Resolve                                |                             3. Keep writing                              |
+| :--------------------------------: | :---------------------------------------------------------------------: | :----------------------------------------------------------------------: |
 | Paste a URL anywhere in your note. | A short `Loading URL...` placeholder appears while the page is fetched. | It is replaced by the page title and favicon, as a normal markdown link. |
 
 </div>
@@ -43,11 +43,11 @@
 
 ## Features
 
-| | |
-| :---: | :---: |
-| **Paste and done**<br>A single pasted URL is resolved automatically. You can also resolve the selected URL, or the one under your cursor, from the command palette or the context menu. | **Preview cards**<br>Prefer something bigger? Render a card with the title, description, favicon and domain. Cards are used when the URL sits on its own line, so they never break a sentence. |
-| **Make it fit your theme**<br>Put the favicon before or after the title, turn it off, or tune its size, spacing and vertical offset. Changes also apply to the links you already have. | **Ignore list**<br>Skip automatic conversion for domains (subdomains included) and for exact URLs. Pasted URLs and `*.example.com` work as rules. |
-| **Safe by default**<br>Your note is left alone when a link would not belong there: inside code, link text, `[[wikilinks]]`, frontmatter, or when you paste over selected text to wrap it in a link. | **Never gets stuck**<br>If a site is slow, unreachable or answers with an error, you get a link with the domain name after 10 seconds instead of a stuck placeholder. |
+|                                                                                                                                                                                                     |                                                                                                                                                                                                |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|       **Paste and done**<br>A single pasted URL is resolved automatically. You can also resolve the selected URL, or the one under your cursor, from the command palette or the context menu.       | **Preview cards**<br>Prefer something bigger? Render a card with the title, description, favicon and domain. Cards are used when the URL sits on its own line, so they never break a sentence. |
+|       **Make it fit your theme**<br>Put the favicon before or after the title, turn it off, or tune its size, spacing and vertical offset. Changes also apply to the links you already have.        |                       **Ignore list**<br>Skip automatic conversion for domains (subdomains included) and for exact URLs. Pasted URLs and `*.example.com` work as rules.                        |
+| **Safe by default**<br>Your note is left alone when a link would not belong there: inside code, link text, `[[wikilinks]]`, frontmatter, or when you paste over selected text to wrap it in a link. |             **Never gets stuck**<br>If a site is slow, unreachable or answers with an error, you get a link with the domain name after 10 seconds instead of a stuck placeholder.              |
 
 </div>
 
@@ -74,16 +74,16 @@ Works on desktop and mobile, Obsidian 1.5.1 or newer.
 
 ## Settings
 
-| Setting | What it does |
-| :---: | :---: |
-| **Icon position** | Favicon before or after the title |
-| **Render links as cards** | Insert preview cards instead of favicon + title links |
-| **Show favicon** | Turn the icon off for plain title links |
-| **Favicon size** | 8 to 48 px |
-| **Favicon spacing** | Extra space between the icon and the title |
+|           Setting           |                          What it does                          |
+| :-------------------------: | :------------------------------------------------------------: |
+|      **Icon position**      |               Favicon before or after the title                |
+|  **Render links as cards**  |     Insert preview cards instead of favicon + title links      |
+|      **Show favicon**       |            Turn the icon off for plain title links             |
+|      **Favicon size**       |                           8 to 48 px                           |
+|     **Favicon spacing**     |           Extra space between the icon and the title           |
 | **Favicon vertical offset** | Nudge the icon up or down to line it up with your theme's text |
-| **Ignored domains** | One per line, subdomains included |
-| **Ignored URLs** | One exact `http` or `https` URL per line |
+|     **Ignored domains**     |               One per line, subdomains included                |
+|      **Ignored URLs**       |            One exact `http` or `https` URL per line            |
 
 </div>
 

@@ -1,4 +1,4 @@
-import type { IgnoreRules, IgnoreRulesSettings } from "../../types";
+import type { IgnoreRules, IgnoreRulesSettings } from '../../types';
 
 export function buildIgnoreRules(settings: IgnoreRulesSettings): IgnoreRules {
 	return {
@@ -46,9 +46,9 @@ function normalizeDomainRule(value: string): string | null {
 	const candidate = value
 		.trim()
 		.toLowerCase()
-		.replace(/^[a-z][a-z0-9+.-]*:\/\//, "")
-		.replace(/^\*\./, "")
-		.replace(/^\.+|\.+$/g, "");
+		.replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+		.replace(/^\*\./, '')
+		.replace(/^\.+|\.+$/g, '');
 
 	if (!candidate || /\s/.test(candidate)) {
 		return null;
@@ -57,7 +57,7 @@ function normalizeDomainRule(value: string): string | null {
 	try {
 		const normalizedUrl = new URL(`https://${candidate}`);
 		if (
-			normalizedUrl.pathname !== "/" ||
+			normalizedUrl.pathname !== '/' ||
 			normalizedUrl.search ||
 			normalizedUrl.hash
 		) {
@@ -73,7 +73,7 @@ function normalizeDomainRule(value: string): string | null {
 function normalizeHttpUrl(value: string): string | null {
 	try {
 		const parsedUrl = new URL(value);
-		if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+		if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
 			return null;
 		}
 

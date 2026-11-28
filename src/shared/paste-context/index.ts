@@ -2,7 +2,7 @@
 // surrounding markdown (link syntax or code). Kept free of Obsidian imports so
 // it can be unit-tested with `node --test`.
 
-import type { OpenFence, PasteContext, RichLinkBlocker } from "../../types";
+import type { OpenFence, PasteContext, RichLinkBlocker } from '../../types';
 
 // A YAML frontmatter block opens with `---` on the very first line and ends
 // at the next `---` (or `...`) line.
@@ -25,30 +25,30 @@ export function findRichLinkBlocker({
 	selection,
 }: PasteContext): RichLinkBlocker | null {
 	const lines = textBeforeCursor.split(/\r?\n/);
-	const currentLine = lines.pop() ?? "";
+	const currentLine = lines.pop() ?? '';
 
 	if (isInsideFrontmatter(lines)) {
-		return "frontmatter";
+		return 'frontmatter';
 	}
 
 	if (isInsideFencedCode(lines)) {
-		return "fenced-code";
+		return 'fenced-code';
 	}
 
 	if (isInsideInlineCode(currentLine)) {
-		return "inline-code";
+		return 'inline-code';
 	}
 
 	if (LINK_DESTINATION_START.test(currentLine)) {
-		return "link-destination";
+		return 'link-destination';
 	}
 
 	if (hasUnclosedBracket(currentLine)) {
-		return "link-text";
+		return 'link-text';
 	}
 
 	if (isPlainTextSelection(selection)) {
-		return "link-text-selection";
+		return 'link-text-selection';
 	}
 
 	return null;
@@ -79,11 +79,11 @@ function hasUnclosedBracket(line: string): boolean {
 	for (let index = 0; index < line.length; index += 1) {
 		const character = line[index];
 
-		if (character === "\\") {
+		if (character === '\\') {
 			index += 1;
-		} else if (character === "[") {
+		} else if (character === '[') {
 			depth += 1;
-		} else if (character === "]" && depth > 0) {
+		} else if (character === ']' && depth > 0) {
 			depth -= 1;
 		}
 	}
@@ -106,8 +106,8 @@ function isInsideFencedCode(completedLines: string[]): boolean {
 			continue;
 		}
 
-		const marker = match[1] ?? "";
-		const rest = match[2] ?? "";
+		const marker = match[1] ?? '';
+		const rest = match[2] ?? '';
 		const character = marker.charAt(0);
 
 		if (!openFence) {
@@ -118,7 +118,7 @@ function isInsideFencedCode(completedLines: string[]): boolean {
 		const closesOpenFence =
 			character === openFence.character &&
 			marker.length >= openFence.length &&
-			rest.trim() === "";
+			rest.trim() === '';
 
 		if (closesOpenFence) {
 			openFence = null;
@@ -151,5 +151,5 @@ function isInsideInlineCode(line: string): boolean {
 
 function isPlainTextSelection(selection: string): boolean {
 	const trimmed = selection.trim();
-	return trimmed !== "" && !HTTP_URL.test(trimmed);
+	return trimmed !== '' && !HTTP_URL.test(trimmed);
 }

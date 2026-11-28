@@ -1,4 +1,4 @@
-import type { EditorPosition } from "obsidian";
+import type { EditorPosition } from 'obsidian';
 
 export interface EditorRange {
 	from: EditorPosition;

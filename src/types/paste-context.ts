@@ -1,10 +1,10 @@
 export type RichLinkBlocker =
-	| "link-destination"
-	| "link-text-selection"
-	| "link-text"
-	| "frontmatter"
-	| "fenced-code"
-	| "inline-code";
+	| 'link-destination'
+	| 'link-text-selection'
+	| 'link-text'
+	| 'frontmatter'
+	| 'fenced-code'
+	| 'inline-code';
 
 export interface PasteContext {
 	/** Document text from the start up to the insertion point. */

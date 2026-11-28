@@ -4,34 +4,35 @@ import {
 	MarkdownView,
 	type Menu,
 	Plugin,
-} from "obsidian";
+} from 'obsidian';
+
 import {
 	loadPluginSettings,
 	RichLinkResolverSettingTab,
 	savePluginSettings,
-} from "./settings";
-import { normalizeSettings } from "./settings/normalize";
-import { applyFaviconStyles, clearFaviconStyles } from "./shared/favicon-style";
-import { buildIgnoreRules, shouldIgnoreUrl } from "./shared/ignore-rules";
-import { buildLoadingMarkdownLink } from "./shared/loading-placeholder";
-import { buildRichMarkdownLink } from "./shared/markdown-link";
+} from './settings';
+import { normalizeSettings } from './settings/normalize';
+import { applyFaviconStyles, clearFaviconStyles } from './shared/favicon-style';
+import { buildIgnoreRules, shouldIgnoreUrl } from './shared/ignore-rules';
+import { buildLoadingMarkdownLink } from './shared/loading-placeholder';
+import { buildRichMarkdownLink } from './shared/markdown-link';
 import {
 	showBlockedUrlNotice,
 	showCursorUrlNotice,
 	showInvalidSelectionNotice,
-} from "./shared/notice";
-import { findRichLinkBlocker } from "./shared/paste-context";
+} from './shared/notice';
+import { findRichLinkBlocker } from './shared/paste-context';
 import {
 	findUrlToResolve,
 	isUrlAloneOnLine,
 	normalizeClipboardUrl,
-} from "./shared/url-detection";
-import { resolveUrlMetadata } from "./shared/url-resolution";
+} from './shared/url-detection';
+import { resolveUrlMetadata } from './shared/url-resolution';
 import type {
 	EditorRange,
 	EditorUrlMatch,
 	RichLinkResolverSettings,
-} from "./types";
+} from './types';
 
 export default class RichLinkResolverPlugin extends Plugin {
 	settings!: RichLinkResolverSettings;
@@ -42,27 +43,27 @@ export default class RichLinkResolverPlugin extends Plugin {
 		this.addSettingTab(new RichLinkResolverSettingTab(this.app, this));
 
 		this.addCommand({
-			id: "resolve-selected-url-to-rich-link",
-			name: "Resolve selected URL to rich link",
+			id: 'resolve-selected-url-to-rich-link',
+			name: 'Resolve selected URL to rich link',
 			editorCallback: async (editor) => {
 				await this.resolveUrlInEditor(editor);
 			},
 		});
 
 		this.registerEvent(
-			this.app.workspace.on("editor-paste", (event, editor) => {
+			this.app.workspace.on('editor-paste', (event, editor) => {
 				void this.handleEditorPaste(event, editor);
 			}),
 		);
 
 		this.registerEvent(
-			this.app.workspace.on("editor-menu", (menu, editor) => {
+			this.app.workspace.on('editor-menu', (menu, editor) => {
 				this.maybeAddEditorMenuItem(menu, editor);
 			}),
 		);
 
 		this.registerEvent(
-			this.app.workspace.on("url-menu", (menu, url) => {
+			this.app.workspace.on('url-menu', (menu, url) => {
 				this.maybeAddUrlMenuItem(menu, url);
 			}),
 		);
@@ -82,7 +83,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 		}
 
 		const pastedUrl = normalizeClipboardUrl(
-			event.clipboardData?.getData("text/plain"),
+			event.clipboardData?.getData('text/plain'),
 		);
 
 		if (!pastedUrl) {
@@ -96,7 +97,10 @@ export default class RichLinkResolverPlugin extends Plugin {
 		// Returning before preventDefault() lets Obsidian's own paste run, so
 		// the URL lands as plain text (or wraps the selection in a link).
 		const blocker = findRichLinkBlocker({
-			textBeforeCursor: this.getTextBefore(editor, editor.getCursor("from")),
+			textBeforeCursor: this.getTextBefore(
+				editor,
+				editor.getCursor('from'),
+			),
 			selection: editor.getSelection(),
 		});
 		if (blocker) {
@@ -106,8 +110,8 @@ export default class RichLinkResolverPlugin extends Plugin {
 		event.preventDefault();
 		await this.replaceEditorTarget(editor, {
 			url: pastedUrl,
-			from: editor.getCursor("from"),
-			to: editor.getCursor("to"),
+			from: editor.getCursor('from'),
+			to: editor.getCursor('to'),
 		});
 	}
 
@@ -118,9 +122,8 @@ export default class RichLinkResolverPlugin extends Plugin {
 		}
 
 		menu.addItem((item) => {
-			item
-				.setTitle("Resolve URL to rich link")
-				.setIcon("globe")
+			item.setTitle('Resolve URL to rich link')
+				.setIcon('globe')
 				.onClick(async () => {
 					await this.resolveUrlInEditor(editor);
 				});
@@ -137,9 +140,8 @@ export default class RichLinkResolverPlugin extends Plugin {
 		}
 
 		menu.addItem((item) => {
-			item
-				.setTitle("Resolve URL in active editor")
-				.setIcon("globe")
+			item.setTitle('Resolve URL in active editor')
+				.setIcon('globe')
 				.onClick(async () => {
 					await this.resolveUrlFromUrlMenu(url);
 				});
@@ -195,7 +197,12 @@ export default class RichLinkResolverPlugin extends Plugin {
 				target.to.ch,
 			);
 		const loadingMarkdown = buildLoadingMarkdownLink(target.url);
-		editor.replaceRange(loadingMarkdown, target.from, target.to, "rich-link");
+		editor.replaceRange(
+			loadingMarkdown,
+			target.from,
+			target.to,
+			'rich-link',
+		);
 
 		const initialRange = this.findPlaceholderRange(
 			editor,
@@ -221,8 +228,11 @@ export default class RichLinkResolverPlugin extends Plugin {
 		}
 
 		const currentRange =
-			this.findPlaceholderRange(editor, loadingMarkdown, initialRange.from) ??
-			null;
+			this.findPlaceholderRange(
+				editor,
+				loadingMarkdown,
+				initialRange.from,
+			) ?? null;
 
 		if (!currentRange) {
 			return;
@@ -232,7 +242,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 			richMarkdown,
 			currentRange.from,
 			currentRange.to,
-			"rich-link",
+			'rich-link',
 		);
 	}
 
@@ -243,7 +253,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 		return (
 			findRichLinkBlocker({
 				textBeforeCursor: this.getTextBefore(editor, target.from),
-				selection: "",
+				selection: '',
 			}) !== null
 		);
 	}

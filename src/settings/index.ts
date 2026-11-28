@@ -4,14 +4,15 @@ import {
 	type Plugin,
 	PluginSettingTab,
 	Setting,
-} from "obsidian";
-import { applyFaviconStyles } from "../shared/favicon-style";
+} from 'obsidian';
+
+import { applyFaviconStyles } from '../shared/favicon-style';
 import {
 	type FaviconNumberSetting,
 	type NumberRange,
 	type RichLinkResolverSettings,
 	type RichLinkResolverSettingsOwner,
-} from "../types";
+} from '../types';
 import {
 	DEFAULT_SETTINGS,
 	FAVICON_OFFSET_RANGE,
@@ -19,7 +20,7 @@ import {
 	FAVICON_SPACING_RANGE,
 	isIconPosition,
 	normalizeSettings,
-} from "./normalize";
+} from './normalize';
 
 export async function loadPluginSettings(
 	plugin: Plugin,
@@ -63,14 +64,14 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Icon position")
+			.setName('Icon position')
 			.setDesc(
-				"Choose whether the favicon appears before or after the link title.",
+				'Choose whether the favicon appears before or after the link title.',
 			)
 			.addDropdown((dropdown) => {
 				dropdown
-					.addOption("before-title", "Before title")
-					.addOption("after-title", "After title")
+					.addOption('before-title', 'Before title')
+					.addOption('after-title', 'After title')
 					.setValue(this.plugin.settings.iconPosition)
 					.onChange(async (value) => {
 						if (!isIconPosition(value)) {
@@ -83,9 +84,9 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Render links as cards")
+			.setName('Render links as cards')
 			.setDesc(
-				"When enabled, resolved URLs are inserted as preview cards instead of favicon + title links.",
+				'When enabled, resolved URLs are inserted as preview cards instead of favicon + title links.',
 			)
 			.addToggle((toggle) => {
 				toggle
@@ -97,8 +98,10 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Show favicon")
-			.setDesc("Turn off to insert plain title links, without the site icon.")
+			.setName('Show favicon')
+			.setDesc(
+				'Turn off to insert plain title links, without the site icon.',
+			)
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.settings.showFavicon)
@@ -110,36 +113,36 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 
 		this.addFaviconSlider(
 			containerEl,
-			"Favicon size",
-			"Width and height of the favicon in pixels. Also applies to existing links.",
+			'Favicon size',
+			'Width and height of the favicon in pixels. Also applies to existing links.',
 			FAVICON_SIZE_RANGE,
-			"faviconSize",
+			'faviconSize',
 		);
 
 		this.addFaviconSlider(
 			containerEl,
-			"Favicon spacing",
-			"Extra space between the favicon and the title, in pixels.",
+			'Favicon spacing',
+			'Extra space between the favicon and the title, in pixels.',
 			FAVICON_SPACING_RANGE,
-			"faviconSpacing",
+			'faviconSpacing',
 		);
 
 		this.addFaviconSlider(
 			containerEl,
-			"Favicon vertical offset",
+			'Favicon vertical offset',
 			"Move the favicon up (positive) or down (negative) to line it up with your theme's text.",
 			FAVICON_OFFSET_RANGE,
-			"faviconOffset",
+			'faviconOffset',
 		);
 
 		new Setting(containerEl)
-			.setName("Ignored domains")
+			.setName('Ignored domains')
 			.setDesc(
-				"One domain per line. Matches the exact domain and its subdomains.",
+				'One domain per line. Matches the exact domain and its subdomains.',
 			)
 			.addTextArea((textArea) => {
 				textArea
-					.setPlaceholder("example.com")
+					.setPlaceholder('example.com')
 					.setValue(this.plugin.settings.ignoredDomainsRaw)
 					.onChange((value) => {
 						this.plugin.settings.ignoredDomainsRaw = value;
@@ -151,11 +154,11 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Ignored URLs")
-			.setDesc("One exact HTTP or HTTPS URL per line.")
+			.setName('Ignored URLs')
+			.setDesc('One exact HTTP or HTTPS URL per line.')
 			.addTextArea((textArea) => {
 				textArea
-					.setPlaceholder("https://example.com/docs")
+					.setPlaceholder('https://example.com/docs')
 					.setValue(this.plugin.settings.ignoredUrlsRaw)
 					.onChange((value) => {
 						this.plugin.settings.ignoredUrlsRaw = value;
@@ -191,8 +194,8 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			})
 			.addExtraButton((button) => {
 				button
-					.setIcon("rotate-ccw")
-					.setTooltip("Restore default")
+					.setIcon('rotate-ccw')
+					.setTooltip('Restore default')
 					.onClick(async () => {
 						this.plugin.settings[key] = DEFAULT_SETTINGS[key];
 						await this.plugin.persistSettings();

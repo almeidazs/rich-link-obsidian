@@ -1,4 +1,4 @@
-import type { IconPosition } from "./settings";
+import type { IconPosition } from './settings';
 
 export interface RichMarkdownLinkOptions {
 	iconPosition: IconPosition;

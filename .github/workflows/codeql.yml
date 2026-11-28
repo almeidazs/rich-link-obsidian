@@ -1,40 +1,40 @@
 name: CodeQL
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  schedule:
-    - cron: "17 4 * * 1"
+    push:
+        branches:
+            - main
+    pull_request:
+    schedule:
+        - cron: '17 4 * * 1'
 
 concurrency:
-  group: codeql-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: codeql-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  analyze:
-    name: Analyze (JavaScript/TypeScript)
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      security-events: write
+    analyze:
+        name: Analyze (JavaScript/TypeScript)
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            contents: read
+            security-events: write
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript-typescript
-          queries: security-and-quality
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: javascript-typescript
+                  queries: security-and-quality
 
-      - name: Analyze
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript-typescript"
+            - name: Analyze
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: '/language:javascript-typescript'

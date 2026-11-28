@@ -12,7 +12,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
-		"types": ["obsidian"],
+		"types": ["obsidian"]
 	},
-	"include": ["src/**/*.ts"],
+	"include": ["src/**/*.ts"]
 }
