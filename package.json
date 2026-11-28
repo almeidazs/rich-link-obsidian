@@ -2,11 +2,25 @@
 	"name": "rich-link-obsidian",
 	"version": "0.3.0",
 	"description": "Obsidian plugin that converts pasted or selected URLs into markdown rich links with favicon and title.",
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"obsidian-md",
+		"rich-link",
+		"link-preview",
+		"bookmark",
+		"favicon",
+		"markdown",
+		"paste"
+	],
 	"type": "module",
 	"private": true,
-	"author": "Almeida",
+	"author": {
+		"name": "Hiago Almeida",
+		"url": "https://github.com/almeidazs"
+	},
 	"license": "Apache-2.0",
-	"homepage": "https://github.com/almeidazs/rich-link-obsidian",
+	"homepage": "https://github.com/almeidazs/rich-link-obsidian#readme",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/almeidazs/rich-link-obsidian.git"
@@ -14,11 +28,16 @@
 	"bugs": {
 		"url": "https://github.com/almeidazs/rich-link-obsidian/issues"
 	},
+	"engines": {
+		"node": ">=22.18.0"
+	},
 	"scripts": {
 		"build": "tsdown",
-		"clean": "rm -f main.js",
 		"dev": "tsdown --watch",
+		"check": "npm run typecheck && npm test && npm run build",
+		"clean": "rm -f main.js",
 		"test": "node --test \"tests/**/*.test.ts\"",
+		"test:watch": "node --test --watch \"tests/**/*.test.ts\"",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
