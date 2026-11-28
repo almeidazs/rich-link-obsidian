@@ -1,247 +1,291 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  workflow_dispatch:
+    push:
+        branches:
+            - main
+    pull_request:
+    workflow_dispatch:
 
 # A new push to the same branch/PR cancels the run that is still in progress.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 env:
-  NODE_VERSION: 22
+    NODE_VERSION: 22
 
 jobs:
-  typecheck:
-    name: Typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    format:
+        name: Format
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+            - name: Check formatting
+              run: npx --no-install oxfmt --check .
 
-  test:
-    name: Test (Node ${{ matrix.node-version }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        # Tests are .ts files run by Node's built-in type stripping (Node >= 22.18).
-        node-version: [22, 24]
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: Run tests
-        run: npm test
+            - name: Lint
+              run: npx --no-install oxlint .
 
-  release-metadata:
-    name: Release metadata
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    typecheck:
+        name: Typecheck
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: Validate package.json / manifest.json / versions.json
-        run: |
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
-            const pkg = read("package.json");
-            const manifest = read("manifest.json");
-            const versions = read("versions.json");
-            const errors = [];
-            if (pkg.version !== manifest.version) errors.push(`package.json version (${pkg.version}) does not match manifest.json version (${manifest.version})`);
-            if (versions[manifest.version] !== manifest.minAppVersion) errors.push(`versions.json entry for ${manifest.version} (${versions[manifest.version] ?? "missing"}) does not match manifest minAppVersion (${manifest.minAppVersion})`);
-            if (process.env.EXPECTED_VERSION && process.env.EXPECTED_VERSION !== manifest.version) errors.push(`Release tag (${process.env.EXPECTED_VERSION}) does not match manifest.json version (${manifest.version})`);
-            if (errors.length > 0) {
-              for (const error of errors) console.error(`::error::${error}`);
-              process.exit(1);
-            }
-            console.log(`Release version check passed for ${manifest.version}`);
-          '
+            - name: Install dependencies
+              run: npm ci
 
-      - name: Validate manifest fields
-        run: |
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
-            const errors = [];
-            for (const field of ["id", "name", "version", "minAppVersion", "description", "author"]) {
-              if (typeof manifest[field] !== "string" || manifest[field].trim() === "") {
-                errors.push(`manifest.json: missing or empty "${field}"`);
-              }
-            }
-            const semver = /^\d+\.\d+\.\d+$/;
-            if (!semver.test(manifest.version ?? "")) errors.push(`manifest.json: version "${manifest.version}" is not X.Y.Z`);
-            if (!semver.test(manifest.minAppVersion ?? "")) errors.push(`manifest.json: minAppVersion "${manifest.minAppVersion}" is not X.Y.Z`);
-            if (typeof manifest.isDesktopOnly !== "boolean") errors.push("manifest.json: isDesktopOnly must be a boolean");
-            if (/obsidian/i.test(manifest.id ?? "")) errors.push(`manifest.json: id "${manifest.id}" must not contain "obsidian"`);
-            if (errors.length > 0) {
-              for (const error of errors) console.error(error);
-              process.exit(1);
-            }
-            console.log("manifest.json is valid");
-          '
+            - name: Typecheck
+              run: npm run typecheck
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    test:
+        name: Test (Node ${{ matrix.node-version }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                # Tests are .ts files run by Node's built-in type stripping (Node >= 22.18).
+                node-version: [22, 24]
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: Build
-        run: npm run build
+            - name: Run tests
+              run: npm test
 
-      - name: Verify release assets
-        run: |
-          set -euo pipefail
-          for file in main.js manifest.json styles.css; do
-            if [ ! -s "$file" ]; then
-              echo "::error::$file is missing or empty"
-              exit 1
-            fi
-          done
-          # Obsidian loads main.js as CommonJS and provides "obsidian" at runtime.
-          if grep -q 'from"obsidian"\|from "obsidian"' main.js; then
-            echo "::error::main.js contains an ESM import of obsidian; it must be external CommonJS"
-            exit 1
-          fi
-          if ! grep -q 'require("obsidian")' main.js; then
-            echo "::error::main.js does not require obsidian"
-            exit 1
-          fi
-          ls -l main.js manifest.json styles.css
+    release-metadata:
+        name: Release metadata
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
 
-      - name: Report bundle size
-        run: |
-          size=$(wc -c < main.js)
-          echo "### Bundle size" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| File | Size |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| main.js | $((size / 1024)) KiB ($size bytes) |" >> "$GITHUB_STEP_SUMMARY"
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Upload plugin build
-        uses: actions/upload-artifact@v4
-        with:
-          name: rich-link-resolver
-          path: |
-            main.js
-            manifest.json
-            styles.css
-          if-no-files-found: error
-          retention-days: 14
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
 
-  audit:
-    name: Dependency audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+            - name: Validate package.json / manifest.json / versions.json
+              run: |
+                  node --input-type=module -e '
+                    import fs from "node:fs";
+                    const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+                    const pkg = read("package.json");
+                    const manifest = read("manifest.json");
+                    const versions = read("versions.json");
+                    const errors = [];
+                    if (pkg.version !== manifest.version) errors.push(`package.json version (${pkg.version}) does not match manifest.json version (${manifest.version})`);
+                    if (versions[manifest.version] !== manifest.minAppVersion) errors.push(`versions.json entry for ${manifest.version} (${versions[manifest.version] ?? "missing"}) does not match manifest minAppVersion (${manifest.minAppVersion})`);
+                    if (process.env.EXPECTED_VERSION && process.env.EXPECTED_VERSION !== manifest.version) errors.push(`Release tag (${process.env.EXPECTED_VERSION}) does not match manifest.json version (${manifest.version})`);
+                    if (errors.length > 0) {
+                      for (const error of errors) console.error(`::error::${error}`);
+                      process.exit(1);
+                    }
+                    console.log(`Release version check passed for ${manifest.version}`);
+                  '
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+            - name: Validate manifest fields
+              run: |
+                  node --input-type=module -e '
+                    import fs from "node:fs";
+                    const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+                    const errors = [];
+                    for (const field of ["id", "name", "version", "minAppVersion", "description", "author"]) {
+                      if (typeof manifest[field] !== "string" || manifest[field].trim() === "") {
+                        errors.push(`manifest.json: missing or empty "${field}"`);
+                      }
+                    }
+                    const semver = /^\d+\.\d+\.\d+$/;
+                    if (!semver.test(manifest.version ?? "")) errors.push(`manifest.json: version "${manifest.version}" is not X.Y.Z`);
+                    if (!semver.test(manifest.minAppVersion ?? "")) errors.push(`manifest.json: minAppVersion "${manifest.minAppVersion}" is not X.Y.Z`);
+                    if (typeof manifest.isDesktopOnly !== "boolean") errors.push("manifest.json: isDesktopOnly must be a boolean");
+                    if (/obsidian/i.test(manifest.id ?? "")) errors.push(`manifest.json: id "${manifest.id}" must not contain "obsidian"`);
+                    if (errors.length > 0) {
+                      for (const error of errors) console.error(error);
+                      process.exit(1);
+                    }
+                    console.log("manifest.json is valid");
+                  '
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
 
-      - name: Install dependencies
-        run: npm ci
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Verify package signatures
-        run: npm audit signatures
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: Audit (fails on high or critical)
-        run: npm audit --audit-level=high
+            - name: Install dependencies
+              run: npm ci
 
-  dependency-review:
-    name: Dependency review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
+            - name: Build
+              run: npm run build
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+            - name: Verify release assets
+              run: |
+                  set -euo pipefail
+                  for file in main.js manifest.json styles.css; do
+                    if [ ! -s "$file" ]; then
+                      echo "::error::$file is missing or empty"
+                      exit 1
+                    fi
+                  done
+                  # Obsidian loads main.js as CommonJS and provides "obsidian" at runtime.
+                  if grep -q 'from"obsidian"\|from "obsidian"' main.js; then
+                    echo "::error::main.js contains an ESM import of obsidian; it must be external CommonJS"
+                    exit 1
+                  fi
+                  if ! grep -q 'require("obsidian")' main.js; then
+                    echo "::error::main.js does not require obsidian"
+                    exit 1
+                  fi
+                  ls -l main.js manifest.json styles.css
 
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: high
+            - name: Report bundle size
+              run: |
+                  size=$(wc -c < main.js)
+                  echo "### Bundle size" >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "| File | Size |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+                  echo "| main.js | $((size / 1024)) KiB ($size bytes) |" >> "$GITHUB_STEP_SUMMARY"
 
-  # Single required check for branch protection: it only passes when every job above passed.
-  ci-ok:
-    name: CI OK
-    if: always()
-    needs:
-      - typecheck
-      - test
-      - release-metadata
-      - build
-      - audit
-      - dependency-review
-    runs-on: ubuntu-latest
+            - name: Upload plugin build
+              uses: actions/upload-artifact@v4
+              with:
+                  name: rich-link-resolver
+                  path: |
+                      main.js
+                      manifest.json
+                      styles.css
+                  if-no-files-found: error
+                  retention-days: 14
 
-    steps:
-      - name: Check results
-        run: |
-          echo '${{ toJSON(needs) }}'
-          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
-            echo "::error::One or more CI jobs failed or were cancelled"
-            exit 1
-          fi
+    audit:
+        name: Dependency audit
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Verify package signatures
+              run: npm audit signatures
+
+            - name: Audit (fails on high or critical)
+              run: npm audit --audit-level=high
+
+    dependency-review:
+        name: Dependency review
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Review dependency changes
+              uses: actions/dependency-review-action@v4
+              with:
+                  fail-on-severity: high
+
+    # Single required check for branch protection: it only passes when every job above passed.
+    ci-ok:
+        name: CI OK
+        if: always()
+        needs:
+            - format
+            - lint
+            - typecheck
+            - test
+            - release-metadata
+            - build
+            - audit
+            - dependency-review
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check results
+              run: |
+                  echo '${{ toJSON(needs) }}'
+                  if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+                    echo "::error::One or more CI jobs failed or were cancelled"
+                    exit 1
+                  fi

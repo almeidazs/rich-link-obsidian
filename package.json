@@ -1,49 +1,59 @@
 {
 	"name": "rich-link-obsidian",
 	"version": "0.3.0",
+	"private": true,
 	"description": "Obsidian plugin that converts pasted or selected URLs into markdown rich links with favicon and title.",
 	"keywords": [
-		"obsidian",
-		"obsidian-plugin",
-		"obsidian-md",
-		"rich-link",
-		"link-preview",
 		"bookmark",
 		"favicon",
+		"link-preview",
 		"markdown",
-		"paste"
+		"obsidian",
+		"obsidian-md",
+		"obsidian-plugin",
+		"paste",
+		"rich-link"
 	],
-	"type": "module",
-	"private": true,
+	"homepage": "https://github.com/almeidazs/rich-link-obsidian#readme",
+	"bugs": {
+		"url": "https://github.com/almeidazs/rich-link-obsidian/issues"
+	},
+	"license": "Apache-2.0",
 	"author": {
 		"name": "Hiago Almeida",
 		"url": "https://github.com/almeidazs"
 	},
-	"license": "Apache-2.0",
-	"homepage": "https://github.com/almeidazs/rich-link-obsidian#readme",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/almeidazs/rich-link-obsidian.git"
 	},
-	"bugs": {
-		"url": "https://github.com/almeidazs/rich-link-obsidian/issues"
-	},
-	"engines": {
-		"node": ">=22.18.0"
-	},
+	"type": "module",
 	"scripts": {
 		"build": "tsdown",
 		"dev": "tsdown --watch",
-		"check": "npm run typecheck && npm test && npm run build",
+		"check": "ultracite check && npm run typecheck && npm test && npm run build",
 		"clean": "rm -f main.js",
+		"format": "ultracite fix",
+		"lint": "ultracite check",
+		"lint:fix": "ultracite fix",
 		"test": "node --test \"tests/**/*.test.ts\"",
 		"test:watch": "node --test --watch \"tests/**/*.test.ts\"",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"prepare": "if [ -z \"$CI\" ] && [ -d .git ]; then lefthook install; fi"
 	},
 	"devDependencies": {
+		"@commitlint/cli": "^20.5.3",
+		"@commitlint/config-conventional": "^20.5.3",
+		"lefthook": "^1.13.6",
 		"linkedom": "^0.18.15",
 		"obsidian": "^1.12.3",
+		"oxfmt": "^0.70.0",
+		"oxlint": "^1.95.0",
 		"tsdown": "^0.23.7",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"ultracite": "^7.12.4"
+	},
+	"engines": {
+		"node": ">=22.18.0"
 	}
 }

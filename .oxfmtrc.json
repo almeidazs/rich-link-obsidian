@@ -1,0 +1,10 @@
+{
+	"useTabs": true,
+	"tabWidth": 4,
+	"printWidth": 80,
+	"singleQuote": true,
+	"semi": true,
+	"endOfLine": "lf",
+	"sortImports": true,
+	"ignorePatterns": ["main.js", "package-lock.json", "assets"]
+}
