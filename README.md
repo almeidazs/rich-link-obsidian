@@ -40,13 +40,9 @@ npm run build
 3. Copy it into your vault:
 
 ```bash
-npm run install:local -- "/absolute/path/to/Your Vault"
-```
-
-You can also use:
-
-```bash
-OBSIDIAN_VAULT_PATH="/absolute/path/to/Your Vault" npm run install:local
+VAULT="/absolute/path/to/Your Vault"
+mkdir -p "$VAULT/.obsidian/plugins/rich-link-resolver"
+cp main.js manifest.json styles.css "$VAULT/.obsidian/plugins/rich-link-resolver/"
 ```
 
 4. In Obsidian, open `Settings -> Community plugins`, reload plugins, and enable `Rich Link Resolver`.
@@ -68,7 +64,9 @@ npm run dev
 After each rebuild, copy the latest plugin files again:
 
 ```bash
-npm run install:local -- "/absolute/path/to/Your Vault"
+VAULT="/absolute/path/to/Your Vault"
+mkdir -p "$VAULT/.obsidian/plugins/rich-link-resolver"
+cp main.js manifest.json styles.css "$VAULT/.obsidian/plugins/rich-link-resolver/"
 ```
 
 ## Release process

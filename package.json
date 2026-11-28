@@ -16,10 +16,8 @@
 	},
 	"scripts": {
 		"build": "node esbuild.config.mjs",
-		"check:release-version": "node scripts/check-release-version.mjs",
 		"clean": "rm -f main.js",
 		"dev": "node esbuild.config.mjs --watch",
-		"install:local": "node scripts/install-local.mjs",
 		"test": "node --test \"tests/**/*.test.ts\"",
 		"typecheck": "tsc --noEmit"
 	},
