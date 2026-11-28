@@ -16,12 +16,15 @@ Example output:
 - Uses the page favicon URL directly in the generated markdown, rendered at `16x16`.
 - Falls back to a plain markdown link if a favicon URL cannot be resolved.
 - Lets you choose whether the favicon appears before or after the title.
-- Can render resolved URLs as preview cards instead of favicon + title links.
+- Lets you turn the favicon off, or adjust its size, spacing and vertical offset to match your theme (these also restyle links you already have).
+- Can render resolved URLs as preview cards instead of favicon + title links (only when the URL is alone on its line; otherwise a normal link is used).
+- Falls back to the hostname if the page is slow (10s timeout), unreachable or returns an error.
 - Lets you ignore specific domains and exact URLs for automatic paste conversion.
 - Leaves the URL untouched when converting it would break the surrounding markdown:
   - pasting where a link URL goes, e.g. right after `[Hello](`
   - pasting over selected text, so Obsidian's built-in `[selected text](url)` behavior still works
   - pasting inside a fenced code block (` ``` ` / `~~~`) or inline code
+  - pasting inside link text, a `[[wikilink`, or the note properties (frontmatter)
 
 ## Local testing
 

@@ -1,29 +1,42 @@
-import type { IconPosition, ResolvedUrlMetadata } from "../../types";
+import type {
+	ResolvedUrlMetadata,
+	RichMarkdownLinkOptions,
+} from "../../types";
 
 const FAVICON_RENDER_SIZE = "16x16";
 
 export function buildRichMarkdownLink(
-	{ url, title, description, iconUrl }: ResolvedUrlMetadata,
-	iconPosition: IconPosition,
-	renderAsCard: boolean,
+	metadata: ResolvedUrlMetadata,
+	{ iconPosition, renderAsCard, showFavicon }: RichMarkdownLinkOptions,
 ): string {
+	const { url, title, description } = metadata;
+	const iconUrl = showFavicon ? metadata.iconUrl : null;
+
 	if (renderAsCard) {
 		return buildRichLinkCard({ url, title, description, iconUrl });
 	}
 
 	const safeTitle = escapeMarkdownText(title);
 
+	const safeUrl = encodeLinkDestination(url);
+
 	if (!iconUrl) {
-		return `[${safeTitle}](<${url}>)`;
+		return `[${safeTitle}](<${encodeLinkDestination(url)}>)`;
 	}
 
-	const faviconMarkdown = `![favicon|${FAVICON_RENDER_SIZE}](<${iconUrl}>)`;
+	const safeIconUrl = encodeLinkDestination(iconUrl);
 
+	// The alt text tells styles.css which side of the title the favicon sits on,
+	// so the "favicon spacing" setting can add its margin on the inner side.
 	if (iconPosition === "after-title") {
-		return `[${safeTitle} ${faviconMarkdown}](<${url}>)`;
+		const faviconMarkdown = `![favicon-after|${FAVICON_RENDER_SIZE}](<${safeIconUrl}>)`;
+
+		return `[${safeTitle} ${faviconMarkdown}](<${safeUrl}>)`;
 	}
 
-	return `[${faviconMarkdown} ${safeTitle}](<${url}>)`;
+	const faviconMarkdown = `![favicon|${FAVICON_RENDER_SIZE}](<${safeIconUrl}>)`;
+
+	return `[${faviconMarkdown} ${safeTitle}](<${safeUrl}>)`;
 }
 
 function buildRichLinkCard({
@@ -37,7 +50,10 @@ function buildRichLinkCard({
 	const safeDescription = description ? escapeHtmlText(description) : null;
 	const safeHost = escapeHtmlText(formatHostname(url));
 	const safeIconUrl = iconUrl ? escapeHtmlAttribute(iconUrl) : null;
-	const safeFallbackInitial = escapeHtmlText(title.slice(0, 1).toUpperCase());
+	// Array.from keeps an emoji or other astral character in one piece.
+	const safeFallbackInitial = escapeHtmlText(
+		Array.from(title.trim())[0]?.toUpperCase() ?? "",
+	);
 	const visualIcon = safeIconUrl
 		? `<img src="${safeIconUrl}" alt="" class="rich-link-card__visual-icon">`
 		: `<span class="rich-link-card__visual-fallback">${safeFallbackInitial}</span>`;
@@ -64,12 +80,18 @@ function escapeMarkdownText(value: string): string {
 	return value
 		.trim()
 		.replace(/\r?\n+/g, " ")
-		.replace(/\\/g, "\\\\")
-		.replace(/\[/g, "\\[")
-		.replace(/\]/g, "\\]")
-		.replace(/\|/g, "\\|")
-		.replace(/\*/g, "\\*")
-		.replace(/_/g, "\\_");
+		// Characters that start emphasis, links, code, math, HTML or a table cell.
+		.replace(/[\\`*_[\]|<>$]/g, "\\$&")
+		// Obsidian-specific pairs: ~~strike~~, ==highlight==, %%comment%%.
+		.replace(/([~=%])\1/g, "\\$1\\$1")
+		// `#word` would become a tag.
+		.replace(/(^|\s)#(?=\S)/g, "$1\\#");
+}
+
+// Inside `<...>` a link destination cannot contain `<`, `>` or a backslash
+// that precedes the closing `>`; percent-encoding keeps the URL equivalent.
+function encodeLinkDestination(url: string): string {
+	return url.replace(/[<>\\]/g, (character) => encodeURIComponent(character));
 }
 
 function escapeHtmlText(value: string): string {

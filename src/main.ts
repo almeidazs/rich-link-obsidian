@@ -10,6 +10,8 @@ import {
 	RichLinkResolverSettingTab,
 	savePluginSettings,
 } from "./settings";
+import { normalizeSettings } from "./settings/normalize";
+import { applyFaviconStyles, clearFaviconStyles } from "./shared/favicon-style";
 import { buildIgnoreRules, shouldIgnoreUrl } from "./shared/ignore-rules";
 import { buildLoadingMarkdownLink } from "./shared/loading-placeholder";
 import { buildRichMarkdownLink } from "./shared/markdown-link";
@@ -19,7 +21,11 @@ import {
 	showInvalidSelectionNotice,
 } from "./shared/notice";
 import { findRichLinkBlocker } from "./shared/paste-context";
-import { findUrlToResolve, normalizeClipboardUrl } from "./shared/url-detection";
+import {
+	findUrlToResolve,
+	isUrlAloneOnLine,
+	normalizeClipboardUrl,
+} from "./shared/url-detection";
 import { resolveUrlMetadata } from "./shared/url-resolution";
 import type {
 	EditorRange,
@@ -32,6 +38,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 
 	override async onload(): Promise<void> {
 		this.settings = await loadPluginSettings(this);
+		applyFaviconStyles(this.settings);
 		this.addSettingTab(new RichLinkResolverSettingTab(this.app, this));
 
 		this.addCommand({
@@ -61,10 +68,19 @@ export default class RichLinkResolverPlugin extends Plugin {
 		);
 	}
 
+	override onunload(): void {
+		clearFaviconStyles();
+	}
+
 	private async handleEditorPaste(
 		event: ClipboardEvent,
 		editor: Editor,
 	): Promise<void> {
+		// Another handler (or plugin) already dealt with this paste.
+		if (event.defaultPrevented) {
+			return;
+		}
+
 		const pastedUrl = normalizeClipboardUrl(
 			event.clipboardData?.getData("text/plain"),
 		);
@@ -170,6 +186,14 @@ export default class RichLinkResolverPlugin extends Plugin {
 		editor: Editor,
 		target: EditorUrlMatch,
 	): Promise<void> {
+		// A preview card is a block: only use it when the URL has its own line.
+		const alone =
+			target.from.line === target.to.line &&
+			isUrlAloneOnLine(
+				editor.getLine(target.from.line),
+				target.from.ch,
+				target.to.ch,
+			);
 		const loadingMarkdown = buildLoadingMarkdownLink(target.url);
 		editor.replaceRange(loadingMarkdown, target.from, target.to, "rich-link");
 
@@ -182,12 +206,19 @@ export default class RichLinkResolverPlugin extends Plugin {
 			to: target.to,
 		};
 
-		const metadata = await resolveUrlMetadata(target.url);
-		const richMarkdown = buildRichMarkdownLink(
-			metadata,
-			this.settings.iconPosition,
-			this.settings.renderAsCard,
-		);
+		// If anything goes wrong, put the original URL back rather than leaving
+		// "Loading URL..." in the note.
+		let richMarkdown = target.url;
+		try {
+			const metadata = await resolveUrlMetadata(target.url);
+			richMarkdown = buildRichMarkdownLink(metadata, {
+				iconPosition: this.settings.iconPosition,
+				renderAsCard: this.settings.renderAsCard && alone,
+				showFavicon: this.settings.showFavicon,
+			});
+		} catch {
+			// keep the plain URL
+		}
 
 		const currentRange =
 			this.findPlaceholderRange(editor, loadingMarkdown, initialRange.from) ??
@@ -246,6 +277,10 @@ export default class RichLinkResolverPlugin extends Plugin {
 	}
 
 	async persistSettings(): Promise<void> {
-		this.settings = await savePluginSettings(this, this.settings);
+		// Normalize synchronously so overlapping saves can't overwrite each other's
+		// changes with a stale copy.
+		this.settings = normalizeSettings(this.settings);
+		applyFaviconStyles(this.settings);
+		await savePluginSettings(this, this.settings);
 	}
 }

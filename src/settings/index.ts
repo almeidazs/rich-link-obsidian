@@ -1,17 +1,25 @@
-import { type App, type Plugin, PluginSettingTab, Setting } from "obsidian";
 import {
-	ICON_POSITIONS,
-	type IconPosition,
+	type App,
+	debounce,
+	type Plugin,
+	PluginSettingTab,
+	Setting,
+} from "obsidian";
+import { applyFaviconStyles } from "../shared/favicon-style";
+import {
+	type FaviconNumberSetting,
+	type NumberRange,
 	type RichLinkResolverSettings,
 	type RichLinkResolverSettingsOwner,
 } from "../types";
-
-export const DEFAULT_SETTINGS: RichLinkResolverSettings = {
-	iconPosition: "before-title",
-	renderAsCard: false,
-	ignoredDomainsRaw: "",
-	ignoredUrlsRaw: "",
-};
+import {
+	DEFAULT_SETTINGS,
+	FAVICON_OFFSET_RANGE,
+	FAVICON_SIZE_RANGE,
+	FAVICON_SPACING_RANGE,
+	isIconPosition,
+	normalizeSettings,
+} from "./normalize";
 
 export async function loadPluginSettings(
 	plugin: Plugin,
@@ -24,19 +32,30 @@ export async function loadPluginSettings(
 export async function savePluginSettings(
 	plugin: Plugin,
 	settings: RichLinkResolverSettings,
-): Promise<RichLinkResolverSettings> {
-	const normalizedSettings = normalizeSettings(settings);
-	await plugin.saveData(normalizedSettings);
-
-	return normalizedSettings;
+): Promise<void> {
+	await plugin.saveData(settings);
 }
 
 export class RichLinkResolverSettingTab extends PluginSettingTab {
+	// Sliders and text areas fire on every tick or keystroke; write to disk once
+	// the user pauses instead of on each one.
+	private readonly saveSoon = debounce(
+		() => {
+			void this.plugin.persistSettings();
+		},
+		400,
+		true,
+	);
+
 	constructor(
 		app: App,
 		private readonly plugin: RichLinkResolverSettingsOwner,
 	) {
 		super(app, plugin);
+	}
+
+	override hide(): void {
+		this.saveSoon.run();
 	}
 
 	override display(): void {
@@ -78,6 +97,42 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Show favicon")
+			.setDesc("Turn off to insert plain title links, without the site icon.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.showFavicon)
+					.onChange(async (value) => {
+						this.plugin.settings.showFavicon = value;
+						await this.plugin.persistSettings();
+					});
+			});
+
+		this.addFaviconSlider(
+			containerEl,
+			"Favicon size",
+			"Width and height of the favicon in pixels. Also applies to existing links.",
+			FAVICON_SIZE_RANGE,
+			"faviconSize",
+		);
+
+		this.addFaviconSlider(
+			containerEl,
+			"Favicon spacing",
+			"Extra space between the favicon and the title, in pixels.",
+			FAVICON_SPACING_RANGE,
+			"faviconSpacing",
+		);
+
+		this.addFaviconSlider(
+			containerEl,
+			"Favicon vertical offset",
+			"Move the favicon up (positive) or down (negative) to line it up with your theme's text.",
+			FAVICON_OFFSET_RANGE,
+			"faviconOffset",
+		);
+
+		new Setting(containerEl)
 			.setName("Ignored domains")
 			.setDesc(
 				"One domain per line. Matches the exact domain and its subdomains.",
@@ -86,9 +141,9 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 				textArea
 					.setPlaceholder("example.com")
 					.setValue(this.plugin.settings.ignoredDomainsRaw)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						this.plugin.settings.ignoredDomainsRaw = value;
-						await this.plugin.persistSettings();
+						this.saveSoon();
 					});
 
 				textArea.inputEl.rows = 8;
@@ -102,48 +157,47 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 				textArea
 					.setPlaceholder("https://example.com/docs")
 					.setValue(this.plugin.settings.ignoredUrlsRaw)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						this.plugin.settings.ignoredUrlsRaw = value;
-						await this.plugin.persistSettings();
+						this.saveSoon();
 					});
 
 				textArea.inputEl.rows = 8;
 				textArea.inputEl.cols = 40;
 			});
 	}
-}
 
-function normalizeSettings(value: unknown): RichLinkResolverSettings {
-	const settingsRecord = isRecord(value) ? value : {};
-
-	return {
-		iconPosition: normalizeIconPosition(settingsRecord.iconPosition),
-		renderAsCard: settingsRecord.renderAsCard === true,
-		ignoredDomainsRaw: normalizeMultilineText(settingsRecord.ignoredDomainsRaw),
-		ignoredUrlsRaw: normalizeMultilineText(settingsRecord.ignoredUrlsRaw),
-	};
-}
-
-function normalizeIconPosition(value: unknown): IconPosition {
-	return isIconPosition(value) ? value : DEFAULT_SETTINGS.iconPosition;
-}
-
-function normalizeMultilineText(value: unknown): string {
-	if (typeof value !== "string") {
-		return "";
+	private addFaviconSlider(
+		containerEl: HTMLElement,
+		name: string,
+		description: string,
+		range: NumberRange,
+		key: FaviconNumberSetting,
+	): void {
+		new Setting(containerEl)
+			.setName(name)
+			.setDesc(description)
+			.addSlider((slider) => {
+				slider
+					.setLimits(range.min, range.max, range.step)
+					.setValue(this.plugin.settings[key])
+					.setDynamicTooltip()
+					.onChange((value) => {
+						this.plugin.settings[key] = value;
+						// Preview right away; the write to disk is debounced.
+						applyFaviconStyles(this.plugin.settings);
+						this.saveSoon();
+					});
+			})
+			.addExtraButton((button) => {
+				button
+					.setIcon("rotate-ccw")
+					.setTooltip("Restore default")
+					.onClick(async () => {
+						this.plugin.settings[key] = DEFAULT_SETTINGS[key];
+						await this.plugin.persistSettings();
+						this.display();
+					});
+			});
 	}
-
-	return value
-		.split(/\r?\n/)
-		.map((entry) => entry.trim())
-		.filter(Boolean)
-		.join("\n");
-}
-
-function isIconPosition(value: unknown): value is IconPosition {
-	return ICON_POSITIONS.includes(value as IconPosition);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
 }

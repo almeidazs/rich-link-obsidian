@@ -1,3 +1,22 @@
+/* Favicons inside rich links. The variables are set by the plugin from its
+   settings; the fallbacks match the default look. */
+/* Exact alt matches only, so unrelated images are never touched. */
+img[alt="favicon"],
+img[alt="favicon-after"] {
+	position: relative;
+	top: calc(var(--rich-link-favicon-offset, 0px) * -1);
+	width: var(--rich-link-favicon-size, 16px);
+	height: var(--rich-link-favicon-size, 16px);
+}
+
+img[alt="favicon"] {
+	margin-inline-end: var(--rich-link-favicon-spacing, 0px);
+}
+
+img[alt="favicon-after"] {
+	margin-inline-start: var(--rich-link-favicon-spacing, 0px);
+}
+
 .rich-link-card {
 	display: flex;
 	width: min(100%, 640px);
