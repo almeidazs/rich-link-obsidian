@@ -28,6 +28,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Test
+        run: npm test
+
       - name: Validate release metadata
         run: npm run check:release-version -- "${GITHUB_REF_NAME}"
 
