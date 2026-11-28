@@ -5,7 +5,7 @@
 	"type": "module",
 	"private": true,
 	"author": "Almeida",
-	"license": "MIT",
+	"license": "Apache-2.0",
 	"homepage": "https://github.com/almeidazs/rich-link-obsidian",
 	"repository": {
 		"type": "git",
