@@ -42,7 +42,7 @@
 	},
 	"devDependencies": {
 		"linkedom": "^0.18.15",
-		"obsidian": "^1.12.3",
+		"obsidian": "^1.14.4",
 		"tsdown": "^0.23.7",
 		"typescript": "^6.0.3"
 	}
