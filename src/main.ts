@@ -15,9 +15,11 @@ import { buildIgnoreRules, shouldIgnoreUrl } from "./shared/ignore-rules";
 import { buildLoadingMarkdownLink } from "./shared/loading-placeholder";
 import { buildRichMarkdownLink } from "./shared/markdown-link";
 import {
+	showBlockedUrlNotice,
 	showCursorUrlNotice,
 	showInvalidSelectionNotice,
 } from "./shared/notice";
+import { findRichLinkBlocker } from "./shared/paste-context";
 import {
 	type EditorUrlMatch,
 	findUrlToResolve,
@@ -75,6 +77,16 @@ export default class RichLinkResolverPlugin extends Plugin {
 			return;
 		}
 
+		// Returning before preventDefault() lets Obsidian's own paste run, so
+		// the URL lands as plain text (or wraps the selection in a link).
+		const blocker = findRichLinkBlocker({
+			textBeforeCursor: this.getTextBefore(editor, editor.getCursor("from")),
+			selection: editor.getSelection(),
+		});
+		if (blocker) {
+			return;
+		}
+
 		event.preventDefault();
 		await this.replaceEditorTarget(editor, {
 			url: pastedUrl,
@@ -84,7 +96,8 @@ export default class RichLinkResolverPlugin extends Plugin {
 	}
 
 	private maybeAddEditorMenuItem(menu: Menu, editor: Editor): void {
-		if (!findUrlToResolve(editor)) {
+		const target = findUrlToResolve(editor);
+		if (!target || this.isTargetBlocked(editor, target)) {
 			return;
 		}
 
@@ -102,7 +115,8 @@ export default class RichLinkResolverPlugin extends Plugin {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		const editor = activeView?.editor;
 
-		if (!editor || !findUrlToResolve(editor, url)) {
+		const target = editor ? findUrlToResolve(editor, url) : null;
+		if (!editor || !target || this.isTargetBlocked(editor, target)) {
 			return;
 		}
 
@@ -141,6 +155,11 @@ export default class RichLinkResolverPlugin extends Plugin {
 			}
 
 			showInvalidSelectionNotice();
+			return;
+		}
+
+		if (this.isTargetBlocked(editor, target)) {
+			showBlockedUrlNotice();
 			return;
 		}
 
@@ -184,6 +203,22 @@ export default class RichLinkResolverPlugin extends Plugin {
 			currentRange.to,
 			"rich-link",
 		);
+	}
+
+	// For menu/command paths the URL already exists in the note, so we check
+	// the context at the URL's start. Selection is irrelevant here (it is the
+	// URL itself, or empty), hence "".
+	private isTargetBlocked(editor: Editor, target: EditorUrlMatch): boolean {
+		return (
+			findRichLinkBlocker({
+				textBeforeCursor: this.getTextBefore(editor, target.from),
+				selection: "",
+			}) !== null
+		);
+	}
+
+	private getTextBefore(editor: Editor, position: EditorPosition): string {
+		return editor.getRange({ line: 0, ch: 0 }, position);
 	}
 
 	private findPlaceholderRange(

@@ -18,6 +18,10 @@ Example output:
 - Lets you choose whether the favicon appears before or after the title.
 - Can render resolved URLs as preview cards instead of favicon + title links.
 - Lets you ignore specific domains and exact URLs for automatic paste conversion.
+- Leaves the URL untouched when converting it would break the surrounding markdown:
+  - pasting where a link URL goes, e.g. right after `[Hello](`
+  - pasting over selected text, so Obsidian's built-in `[selected text](url)` behavior still works
+  - pasting inside a fenced code block (` ``` ` / `~~~`) or inline code
 
 ## Local testing
 
@@ -48,6 +52,12 @@ OBSIDIAN_VAULT_PATH="/absolute/path/to/Your Vault" npm run install:local
 4. In Obsidian, open `Settings -> Community plugins`, reload plugins, and enable `Rich Link Resolver`.
 
 ## Development
+
+Run the unit tests (uses Node's built-in test runner, Node 22.18+ / 23.6+):
+
+```bash
+npm test
+```
 
 Watch mode:
 
