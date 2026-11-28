@@ -1,15 +1,10 @@
 import { type App, type Plugin, PluginSettingTab, Setting } from "obsidian";
-
-export const ICON_POSITIONS = ["before-title", "after-title"] as const;
-
-export type IconPosition = (typeof ICON_POSITIONS)[number];
-
-export interface RichLinkResolverSettings {
-	iconPosition: IconPosition;
-	renderAsCard: boolean;
-	ignoredDomainsRaw: string;
-	ignoredUrlsRaw: string;
-}
+import {
+	ICON_POSITIONS,
+	type IconPosition,
+	type RichLinkResolverSettings,
+	type RichLinkResolverSettingsOwner,
+} from "../types";
 
 export const DEFAULT_SETTINGS: RichLinkResolverSettings = {
 	iconPosition: "before-title",
@@ -116,11 +111,6 @@ export class RichLinkResolverSettingTab extends PluginSettingTab {
 				textArea.inputEl.cols = 40;
 			});
 	}
-}
-
-interface RichLinkResolverSettingsOwner extends Plugin {
-	settings: RichLinkResolverSettings;
-	persistSettings(): Promise<void>;
 }
 
 function normalizeSettings(value: unknown): RichLinkResolverSettings {

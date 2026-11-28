@@ -1,16 +1,6 @@
-import type { RichLinkResolverSettings } from "../../settings";
+import type { IgnoreRules, IgnoreRulesSettings } from "../../types";
 
-export interface IgnoreRules {
-	domains: string[];
-	exactUrls: string[];
-}
-
-export function buildIgnoreRules(
-	settings: Pick<
-		RichLinkResolverSettings,
-		"ignoredDomainsRaw" | "ignoredUrlsRaw"
-	>,
-): IgnoreRules {
+export function buildIgnoreRules(settings: IgnoreRulesSettings): IgnoreRules {
 	return {
 		domains: parseIgnoredDomains(settings.ignoredDomainsRaw),
 		exactUrls: parseIgnoredUrls(settings.ignoredUrlsRaw),

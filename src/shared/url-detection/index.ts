@@ -1,13 +1,8 @@
-import type { Editor, EditorPosition } from "obsidian";
+import type { Editor } from "obsidian";
+import type { EditorUrlMatch } from "../../types";
 
 const URL_PATTERN = /https?:\/\/[^\s<>"'`[\]{}]+/gi;
 const TRAILING_PUNCTUATION = /[.,;!?]+$/;
-
-export interface EditorUrlMatch {
-	url: string;
-	from: EditorPosition;
-	to: EditorPosition;
-}
 
 export function normalizeClipboardUrl(
 	value: string | null | undefined,

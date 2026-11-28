@@ -2,18 +2,7 @@
 // surrounding markdown (link syntax or code). Kept free of Obsidian imports so
 // it can be unit-tested with `node --test`.
 
-export type RichLinkBlocker =
-	| "link-destination"
-	| "link-text-selection"
-	| "fenced-code"
-	| "inline-code";
-
-export interface PasteContext {
-	/** Document text from the start up to the insertion point. */
-	textBeforeCursor: string;
-	/** Text that the insertion will replace ("" when nothing is selected). */
-	selection: string;
-}
+import type { OpenFence, PasteContext, RichLinkBlocker } from "../../types";
 
 // `](` optionally followed by spaces and/or the `<` of an angle-bracket
 // destination, anchored to the end: the cursor sits where a link URL goes.
@@ -59,7 +48,7 @@ export function findRichLinkBlocker({
  * ```` can't be closed by ```.
  */
 function isInsideFencedCode(completedLines: string[]): boolean {
-	let openFence: { character: string; length: number } | null = null;
+	let openFence: OpenFence | null = null;
 
 	for (const line of completedLines) {
 		const match = FENCE_LINE.exec(line);

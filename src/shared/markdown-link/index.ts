@@ -1,5 +1,4 @@
-import type { IconPosition } from "../../settings";
-import type { ResolvedUrlMetadata } from "../url-resolution";
+import type { IconPosition, ResolvedUrlMetadata } from "../../types";
 
 const FAVICON_RENDER_SIZE = "16x16";
 

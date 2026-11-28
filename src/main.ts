@@ -7,7 +7,6 @@ import {
 } from "obsidian";
 import {
 	loadPluginSettings,
-	type RichLinkResolverSettings,
 	RichLinkResolverSettingTab,
 	savePluginSettings,
 } from "./settings";
@@ -20,12 +19,13 @@ import {
 	showInvalidSelectionNotice,
 } from "./shared/notice";
 import { findRichLinkBlocker } from "./shared/paste-context";
-import {
-	type EditorUrlMatch,
-	findUrlToResolve,
-	normalizeClipboardUrl,
-} from "./shared/url-detection";
+import { findUrlToResolve, normalizeClipboardUrl } from "./shared/url-detection";
 import { resolveUrlMetadata } from "./shared/url-resolution";
+import type {
+	EditorRange,
+	EditorUrlMatch,
+	RichLinkResolverSettings,
+} from "./types";
 
 export default class RichLinkResolverPlugin extends Plugin {
 	settings!: RichLinkResolverSettings;
@@ -225,7 +225,7 @@ export default class RichLinkResolverPlugin extends Plugin {
 		editor: Editor,
 		placeholder: string,
 		preferredStart: EditorPosition,
-	): { from: EditorPosition; to: EditorPosition } | null {
+	): EditorRange | null {
 		const documentText = editor.getValue();
 		const preferredOffset = editor.posToOffset(preferredStart);
 		const placeholderLength = placeholder.length;

@@ -1,4 +1,5 @@
 import { requestUrl } from "obsidian";
+import type { ResolvedUrlMetadata } from "../../types";
 
 const REQUEST_HEADERS = {
 	Accept: "text/html,application/xhtml+xml",
@@ -24,13 +25,6 @@ const ICON_SELECTORS = [
 	'link[rel="apple-touch-icon"]',
 	'link[rel="mask-icon"]',
 ] as const;
-
-export interface ResolvedUrlMetadata {
-	url: string;
-	title: string;
-	description: string | null;
-	iconUrl: string | null;
-}
 
 export async function resolveUrlMetadata(
 	url: string,
