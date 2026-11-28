@@ -9,5 +9,5 @@ export function showCursorUrlNotice(): void {
 }
 
 export function showBlockedUrlNotice(): void {
-  new Notice("This URL is inside a link or code block, so it was left as is.");
+  new Notice("This URL is inside a link, code block or note properties, so it was left as is.");
 }

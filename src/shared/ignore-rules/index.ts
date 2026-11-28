@@ -42,7 +42,13 @@ function extractNonEmptyLines(value: string): string[] {
 }
 
 function normalizeDomainRule(value: string): string | null {
-	const candidate = value.toLowerCase().replace(/^\.+|\.+$/g, "");
+	// Accept what people actually type: a pasted URL, `*.example.com`, stray dots.
+	const candidate = value
+		.trim()
+		.toLowerCase()
+		.replace(/^[a-z][a-z0-9+.-]*:\/\//, "")
+		.replace(/^\*\./, "")
+		.replace(/^\.+|\.+$/g, "");
 
 	if (!candidate || /\s/.test(candidate)) {
 		return null;

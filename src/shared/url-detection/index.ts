@@ -1,8 +1,12 @@
 import type { Editor } from "obsidian";
 import type { EditorUrlMatch } from "../../types";
 
-const URL_PATTERN = /https?:\/\/[^\s<>"'`[\]{}]+/gi;
-const TRAILING_PUNCTUATION = /[.,;!?]+$/;
+// Quotes and brackets are allowed inside a URL (`Rock_'n'_Roll`, `?a[]=1`);
+// the ones that merely surround it are trimmed off afterwards.
+const URL_PATTERN = /https?:\/\/[^\s<>"`]+/gi;
+const HTTP_SCHEME = /^https?:\/\//i;
+const TRAILING_PUNCTUATION = /[.,;:!?'"]+$/;
+const CLOSING_TO_OPENING: Record<string, string> = { ")": "(", "]": "[", "}": "{" };
 
 export function normalizeClipboardUrl(
 	value: string | null | undefined,
@@ -21,20 +25,58 @@ export function findUrlToResolve(
 	const selectedUrl = findSelectedUrl(editor);
 
 	if (selectedUrl && matchesPreferredUrl(selectedUrl.url, preferredUrl)) {
-		return selectedUrl;
+		return includeAutolinkBrackets(editor, selectedUrl);
 	}
 
 	const cursorUrl = findUrlAtCursor(editor);
 
 	if (cursorUrl && matchesPreferredUrl(cursorUrl.url, preferredUrl)) {
-		return cursorUrl;
+		return includeAutolinkBrackets(editor, cursorUrl);
 	}
 
 	if (!preferredUrl) {
 		return null;
 	}
 
-	return findPreferredUrlInCursorLine(editor, preferredUrl);
+	const preferredMatch = findPreferredUrlInCursorLine(editor, preferredUrl);
+
+	return preferredMatch && includeAutolinkBrackets(editor, preferredMatch);
+}
+
+/**
+ * True when nothing but whitespace shares the line with the URL. Block-level
+ * output (preview cards) is only safe there: mid-sentence, inside a list item,
+ * a quote or a table row it would break the surrounding markdown.
+ */
+export function isUrlAloneOnLine(
+	line: string,
+	fromCh: number,
+	toCh: number,
+): boolean {
+	return line.slice(0, fromCh).trim() === "" && line.slice(toCh).trim() === "";
+}
+
+// `<https://a.com>` is an autolink: replacing only the URL inside would leave
+// `<[Title](<https://a.com>)>`, so the surrounding brackets go with it.
+function includeAutolinkBrackets(
+	editor: Editor,
+	match: EditorUrlMatch,
+): EditorUrlMatch {
+	if (match.from.line !== match.to.line) {
+		return match;
+	}
+
+	const line = editor.getLine(match.from.line);
+
+	if (line[match.from.ch - 1] !== "<" || line[match.to.ch] !== ">") {
+		return match;
+	}
+
+	return {
+		url: match.url,
+		from: { line: match.from.line, ch: match.from.ch - 1 },
+		to: { line: match.to.line, ch: match.to.ch + 1 },
+	};
 }
 
 function findSelectedUrl(editor: Editor): EditorUrlMatch | null {
@@ -43,16 +85,19 @@ function findSelectedUrl(editor: Editor): EditorUrlMatch | null {
 		return null;
 	}
 
-	const trimmedSelection = selection.trim();
-	const normalizedUrl = normalizeUrlCandidate(trimmedSelection);
+	const normalizedUrl = normalizeUrlCandidate(selection);
 
 	if (!normalizedUrl) {
 		return null;
 	}
 
-	const fromOffset = editor.posToOffset(editor.getCursor("from"));
-	const leadingWhitespaceLength = selection.match(/^\s*/)?.[0].length ?? 0;
-	const startOffset = fromOffset + leadingWhitespaceLength;
+	// Locate the URL itself inside the selection: whitespace or `<` may precede it.
+	const urlIndex = selection.indexOf(normalizedUrl);
+	if (urlIndex === -1) {
+		return null;
+	}
+
+	const startOffset = editor.posToOffset(editor.getCursor("from")) + urlIndex;
 	const endOffset = startOffset + normalizedUrl.length;
 
 	return {
@@ -126,7 +171,7 @@ function normalizeUrlCandidate(value: string): string | null {
 
 	candidate = trimTrailingDecorations(candidate);
 
-	if (!candidate || /\s/.test(candidate)) {
+	if (!HTTP_SCHEME.test(candidate) || /\s/.test(candidate)) {
 		return null;
 	}
 
@@ -142,21 +187,26 @@ function normalizeUrlCandidate(value: string): string | null {
 	}
 }
 
+// Strips what surrounds a URL in prose: sentence punctuation, quotes and an
+// unbalanced closing bracket (`(see https://a.com)`), but keeps balanced ones
+// that belong to the URL (`.../Foo_(bar)`).
 function trimTrailingDecorations(value: string): string {
-	let trimmed = value.replace(TRAILING_PUNCTUATION, "");
+	let trimmed = value;
+	let previous: string;
 
-	while (trimmed.endsWith(")") && hasMoreClosingParentheses(trimmed)) {
-		trimmed = trimmed.slice(0, -1);
-	}
+	do {
+		previous = trimmed;
+		trimmed = trimmed.replace(TRAILING_PUNCTUATION, "");
+
+		const last = trimmed.slice(-1);
+		const opening = CLOSING_TO_OPENING[last];
+
+		if (opening && countCharacter(trimmed, last) > countCharacter(trimmed, opening)) {
+			trimmed = trimmed.slice(0, -1);
+		}
+	} while (trimmed !== previous);
 
 	return trimmed;
-}
-
-function hasMoreClosingParentheses(value: string): boolean {
-	const opening = countCharacter(value, "(");
-	const closing = countCharacter(value, ")");
-
-	return closing > opening;
 }
 
 function countCharacter(value: string, character: string): number {

@@ -115,4 +115,46 @@ describe("findRichLinkBlocker", () => {
 			assert.equal(blocker("`a\nb "), null);
 		});
 	});
+
+	describe("link text and wikilinks", () => {
+		it("blocks inside an unclosed [[wikilink", () => {
+			assert.equal(blocker("See [["), "link-text");
+			assert.equal(blocker("See [[Some no"), "link-text");
+		});
+
+		it("blocks inside unclosed link text", () => {
+			assert.equal(blocker("Read [click "), "link-text");
+			assert.equal(blocker("An ![alt "), "link-text");
+		});
+
+		it("allows after closed brackets and task-list checkboxes", () => {
+			assert.equal(blocker("[a] and [[b]] and "), null);
+			assert.equal(blocker("- [ ] task "), null);
+			assert.equal(blocker("- [x] done "), null);
+		});
+
+		it("ignores escaped brackets", () => {
+			assert.equal(blocker("costs \\[5 "), null);
+		});
+
+		it("only looks at the current line", () => {
+			assert.equal(blocker("an [unclosed\nnext line "), null);
+		});
+	});
+
+	describe("frontmatter", () => {
+		it("blocks inside the YAML frontmatter", () => {
+			assert.equal(blocker("---\ntitle: x\nsource: "), "frontmatter");
+			assert.equal(blocker("---\n"), "frontmatter");
+		});
+
+		it("allows once the frontmatter is closed", () => {
+			assert.equal(blocker("---\ntitle: x\n---\nBody "), null);
+			assert.equal(blocker("---\ntitle: x\n...\nBody "), null);
+		});
+
+		it("does not treat a later --- rule as frontmatter", () => {
+			assert.equal(blocker("Intro\n---\nAfter the rule "), null);
+		});
+	});
 });

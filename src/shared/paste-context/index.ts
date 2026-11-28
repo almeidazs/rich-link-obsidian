@@ -4,6 +4,11 @@
 
 import type { OpenFence, PasteContext, RichLinkBlocker } from "../../types";
 
+// A YAML frontmatter block opens with `---` on the very first line and ends
+// at the next `---` (or `...`) line.
+const FRONTMATTER_FENCE = /^---\s*$/;
+const FRONTMATTER_END = /^(?:---|\.\.\.)\s*$/;
+
 // `](` optionally followed by spaces and/or the `<` of an angle-bracket
 // destination, anchored to the end: the cursor sits where a link URL goes.
 const LINK_DESTINATION_START = /\]\(\s*<?$/;
@@ -22,6 +27,10 @@ export function findRichLinkBlocker({
 	const lines = textBeforeCursor.split(/\r?\n/);
 	const currentLine = lines.pop() ?? "";
 
+	if (isInsideFrontmatter(lines)) {
+		return "frontmatter";
+	}
+
 	if (isInsideFencedCode(lines)) {
 		return "fenced-code";
 	}
@@ -34,11 +43,52 @@ export function findRichLinkBlocker({
 		return "link-destination";
 	}
 
+	if (hasUnclosedBracket(currentLine)) {
+		return "link-text";
+	}
+
 	if (isPlainTextSelection(selection)) {
 		return "link-text-selection";
 	}
 
 	return null;
+}
+
+/**
+ * Pasting a link into frontmatter would corrupt the YAML properties, so any
+ * position after the opening `---` and before the closing line is blocked.
+ */
+function isInsideFrontmatter(completedLines: string[]): boolean {
+	const [first, ...rest] = completedLines;
+
+	if (first === undefined || !FRONTMATTER_FENCE.test(first)) {
+		return false;
+	}
+
+	return !rest.some((line) => FRONTMATTER_END.test(line));
+}
+
+/**
+ * A `[` that is still open at the cursor means we are inside link text, an
+ * image alt or a `[[wikilink`; a link nested there would break it.
+ * Escaped brackets (`\[`) don't count.
+ */
+function hasUnclosedBracket(line: string): boolean {
+	let depth = 0;
+
+	for (let index = 0; index < line.length; index += 1) {
+		const character = line[index];
+
+		if (character === "\\") {
+			index += 1;
+		} else if (character === "[") {
+			depth += 1;
+		} else if (character === "]" && depth > 0) {
+			depth -= 1;
+		}
+	}
+
+	return depth > 0;
 }
 
 /**

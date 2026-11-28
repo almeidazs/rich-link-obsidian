@@ -1,6 +1,8 @@
 export type RichLinkBlocker =
 	| "link-destination"
 	| "link-text-selection"
+	| "link-text"
+	| "frontmatter"
 	| "fenced-code"
 	| "inline-code";
 
